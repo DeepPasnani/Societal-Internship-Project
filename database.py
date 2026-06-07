@@ -1,8 +1,3 @@
-"""
-ClinicFlow — Database Layer
-SQLite3 with WAL mode, proper uniqueness constraints, and atomic token generation.
-"""
-
 import sqlite3
 import os
 import random

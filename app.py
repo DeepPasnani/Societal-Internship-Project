@@ -1,13 +1,3 @@
-"""
-ClinicFlow — Main Flask Application
-Healthcare Appointment & Analytics System
-GTU Societal Internship | BE05000011
-
-Authentication:
-  - Google OAuth 2.0 (Authlib)
-  - Firebase Phone Auth (OTP verification via Firebase REST API)
-"""
-
 import os
 import sys
 import json
