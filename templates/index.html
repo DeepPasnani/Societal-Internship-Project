@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClinicFlow — Smart Healthcare Appointments for Vadodara Clinics</title>
+  <meta name="description" content="ClinicFlow is a modern healthcare appointment and analytics system for small clinics and PHCs in Vadodara, Gujarat. Zero waiting guesswork." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-circle-check"></i>
+        GTU Societal Internship · BE05000011
+      </div>
+      <div class="hero-logo">
+        <div class="hero-logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <h1>Clinic<span>Flow</span></h1>
+      </div>
+      <p class="hero-tagline">
+        Smart Appointments. Zero Waiting Guesswork.<br/>
+        AI-powered wait time predictions for clinics in Vadodara, Gujarat.
+      </p>
+      <div class="hero-cta">
+        <a href="/booking" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+        </a>
+        <a href="/analytics" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,0.4);">
+          <i class="fa-solid fa-chart-line"></i> View Analytics
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE CARDS -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header" style="text-align:center; margin-bottom:40px;">
+      <h2>Everything your clinic needs</h2>
+      <p>From patient booking to real-time queue management and ML-powered analytics</p>
+    </div>
+    <div class="feature-cards">
+      <div class="feature-card">
+        <div class="feature-icon icon-blue">
+          <i class="fa-solid fa-calendar-check"></i>
+        </div>
+        <h3>Smart Appointment Booking</h3>
+        <p>3-step guided booking with real-time slot availability, doctor schedule integration, and instant token generation.</p>
+        <a href="/booking" class="btn btn-primary">
+          Book Now <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon icon-green">
+          <i class="fa-solid fa-ticket"></i>
+        </div>
+        <h3>Live Token Queue Display</h3>
+        <p>Real-time token queue with auto-refresh every 8 seconds. Designed for clinic TV displays with high-contrast readability.</p>
+        <a href="/token" class="btn btn-accent">
+          View Queue <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon icon-orange">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3>Clinic Analytics Dashboard</h3>
+        <p>Decision-support charts: appointment trends, wait time analysis, doctor load comparison, and ML model accuracy scatter plots.</p>
+        <a href="/analytics" class="btn btn-outline">
+          Explore Analytics <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon icon-purple">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <h3>ML Wait Time Predictor</h3>
+        <p>Random Forest model trained on 600+ records predicts wait times based on queue depth, doctor, time of day, and no-show history.</p>
+        <a href="/booking" class="btn btn-ghost">
+          See Prediction <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon icon-blue">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+        <h3>Doctor Schedule Dashboard</h3>
+        <p>Per-doctor appointment management with status updates, weekly calendar view, and no-show rate tracking.</p>
+        <a href="/doctor" class="btn btn-outline">
+          Doctor Panel <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon icon-green">
+          <i class="fa-solid fa-language"></i>
+        </div>
+        <h3>Gujarati Language Support</h3>
+        <p>Booking page supports English/Gujarati toggle — making it accessible to all patients in Vadodara's PHCs.</p>
+        <a href="/booking" class="btn btn-ghost">
+          Try Gujarati <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE STATS BAR -->
+<section class="stats-bar">
+  <div class="container">
+    <div style="text-align:center; margin-bottom:28px;">
+      <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.15em; color:rgba(255,255,255,0.35); font-weight:700;">
+        Today's Live Statistics
+      </span>
+    </div>
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <div class="stat-number">
+          <span id="stat-total" class="data-font">0</span>
+        </div>
+        <div class="stat-label">
+          <i class="fa-solid fa-calendar-day stat-icon"></i>
+          Total Appointments Today
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">
+          <span id="stat-waiting" class="data-font">0</span>
+        </div>
+        <div class="stat-label">
+          <i class="fa-solid fa-hourglass-half stat-icon"></i>
+          Currently Waiting
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">
+          <span id="stat-avg-wait" class="data-font">0</span>
+          <span class="stat-unit">min</span>
+        </div>
+        <div class="stat-label">
+          <i class="fa-solid fa-clock stat-icon"></i>
+          Average Wait Time Today
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  Built with <span>♥</span> for Vadodara clinics &nbsp;·&nbsp;
+  GTU Societal Internship BE05000011 &nbsp;·&nbsp;
+  ClinicFlow &copy; 2025
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+  // Hamburger menu toggle
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+
+  // Count-up animation
+  function countUp(el, target, duration = 1600) {
+    const start = performance.now();
+    const step = (now) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Fetch today's stats
+  fetch('/api/today-stats')
+    .then(r => r.json())
+    .then(data => {
+      countUp(document.getElementById('stat-total'), data.total_today || 0);
+      countUp(document.getElementById('stat-waiting'), data.currently_waiting || 0);
+      countUp(document.getElementById('stat-avg-wait'), Math.round(data.avg_wait_today || 0));
+    })
+    .catch(() => {
+      // Silently fail — stats bar remains at 0
+    });
+</script>
+</body>
+</html>

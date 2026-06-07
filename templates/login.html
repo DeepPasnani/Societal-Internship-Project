@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — ClinicFlow</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      background: var(--bg);
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      box-shadow: 0 8px 40px rgba(26,108,245,0.08);
+    }
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-family: var(--font-heading);
+    }
+    .auth-logo .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 1rem;
+    }
+    .auth-subtitle {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 32px;
+    }
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--border);
+    }
+    .btn-google {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 12px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: white;
+      color: #333;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-google:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+    .btn-google img { width: 20px; }
+    .phone-form { display: flex; flex-direction: column; gap: 12px; }
+    .phone-input-row { display: flex; gap: 8px; }
+    .phone-input-row input { flex: 1; }
+    #otp-section { display: none; flex-direction: column; gap: 12px; }
+    .otp-digits {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .otp-digits input {
+      width: 44px; height: 52px;
+      text-align: center; font-size: 1.3rem; font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .otp-digits input:focus { border-color: var(--primary); outline: none; }
+    .auth-error {
+      background: #fff0f0; border: 1px solid #ffcccc;
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      color: #c00; font-size: 0.82rem; display: none;
+    }
+    .recaptcha-notice {
+      font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 4px;
+    }
+    .tab-row {
+      display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px; font-size: 0.87rem; font-weight: 600;
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    #recaptcha-container { margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+  </div>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </div>
+    <p class="auth-subtitle">Sign in to book appointments &amp; manage your queue</p>
+
+    {% if request.args.get('error') %}
+    <div class="auth-error" style="display:block; margin-bottom:16px;">
+      {% if request.args.get('error') == 'google_auth_failed' %}
+        Google sign-in failed. Please try again.
+      {% else %}
+        Authentication error. Please try again.
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Google Sign In -->
+    <a href="/auth/google" class="btn-google">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Continue with Google
+    </a>
+
+    <div class="auth-divider">or sign in with phone</div>
+
+    <!-- Phone OTP -->
+    <div id="auth-error" class="auth-error"></div>
+
+    <!-- Phone number entry -->
+    <div id="phone-section" class="phone-form">
+      <div>
+        <label class="form-label">Mobile Number</label>
+        <div class="phone-input-row">
+          <select class="form-control" id="country-code" style="max-width:100px;">
+            <option value="+91">🇮🇳 +91</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+61">🇦🇺 +61</option>
+            <option value="+971">🇦🇪 +971</option>
+          </select>
+          <input type="tel" id="phone-input" class="form-control"
+                 placeholder="10-digit number" maxlength="10" autocomplete="tel" />
+        </div>
+      </div>
+      <div id="recaptcha-container"></div>
+      <p class="recaptcha-notice">
+        Protected by reCAPTCHA · <a href="https://policies.google.com/privacy" target="_blank">Privacy</a>
+      </p>
+      <button class="btn btn-primary" id="send-otp-btn" onclick="sendOTP()" style="width:100%;">
+        <i class="fa-solid fa-paper-plane"></i> Send OTP
+      </button>
+    </div>
+
+    <!-- OTP entry -->
+    <div id="otp-section">
+      <label class="form-label" style="text-align:center; display:block;">
+        Enter the 6-digit OTP sent to <strong id="otp-phone-display"></strong>
+      </label>
+      <div class="otp-digits">
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-0" />
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-1" />
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-2" />
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-3" />
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-4" />
+        <input type="tel" maxlength="1" class="otp-digit" id="otp-5" />
+      </div>
+      <button class="btn btn-accent" id="verify-otp-btn" onclick="verifyOTP()" style="width:100%;">
+        <i class="fa-solid fa-shield-halved"></i> Verify &amp; Sign In
+      </button>
+      <button class="btn btn-ghost" onclick="resetPhoneForm()" style="width:100%; font-size:0.82rem;">
+        ← Change number
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import {
+    getAuth, RecaptchaVerifier, signInWithPhoneNumber
+  } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  const FIREBASE_API_KEY    = "{{ firebase_api_key }}";
+  const FIREBASE_PROJECT_ID = "{{ firebase_project_id }}";
+
+  // If no Firebase config, disable phone auth gracefully
+  if (!FIREBASE_API_KEY || FIREBASE_API_KEY === 'your-firebase-api-key') {
+    document.getElementById('phone-section').innerHTML =
+      '<p style="color:var(--muted);font-size:0.85rem;text-align:center;">' +
+      '<i class="fa-solid fa-info-circle"></i> Phone sign-in requires Firebase configuration.<br>' +
+      'Please use Google sign-in or contact the administrator.</p>';
+    window._firebaseReady = false;
+  } else {
+    window._firebaseReady = true;
+    const firebaseConfig = {
+      apiKey: FIREBASE_API_KEY,
+      authDomain: `${FIREBASE_PROJECT_ID}.firebaseapp.com`,
+      projectId: FIREBASE_PROJECT_ID,
+    };
+    const firebaseApp  = initializeApp(firebaseConfig);
+    const auth         = getAuth(firebaseApp);
+    auth.useDeviceLanguage();
+
+    window._auth = auth;
+    window._RecaptchaVerifier    = RecaptchaVerifier;
+    window._signInWithPhoneNumber = signInWithPhoneNumber;
+
+    // Invisible reCAPTCHA
+    window._recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      size: 'invisible',
+      callback: () => {},
+    });
+  }
+</script>
+
+<script>
+  let _confirmationResult = null;
+
+  function showError(msg) {
+    const el = document.getElementById('auth-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function clearError() {
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  async function sendOTP() {
+    clearError();
+    if (!window._firebaseReady) return;
+
+    const cc    = document.getElementById('country-code').value;
+    const num   = document.getElementById('phone-input').value.trim();
+    if (!num || num.length < 8) {
+      showError('Please enter a valid phone number.'); return;
+    }
+    const fullPhone = cc + num;
+
+    const btn = document.getElementById('send-otp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+    try {
+      _confirmationResult = await window._signInWithPhoneNumber(
+        window._auth, fullPhone, window._recaptchaVerifier
+      );
+      document.getElementById('otp-phone-display').textContent = fullPhone;
+      document.getElementById('phone-section').style.display = 'none';
+      document.getElementById('otp-section').style.display   = 'flex';
+      document.getElementById('otp-0').focus();
+    } catch (err) {
+      console.error(err);
+      showError(err.message || 'Failed to send OTP. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send OTP';
+      // Reset recaptcha on error
+      if (window._recaptchaVerifier) {
+        window._recaptchaVerifier.render().then(id => window.grecaptcha.reset(id));
+      }
+    }
+  }
+
+  async function verifyOTP() {
+    clearError();
+    const otp = Array.from({length:6}, (_, i) =>
+      document.getElementById(`otp-${i}`).value
+    ).join('');
+
+    if (otp.length !== 6) { showError('Enter all 6 digits.'); return; }
+    if (!_confirmationResult) { showError('Please request OTP first.'); return; }
+
+    const btn = document.getElementById('verify-otp-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+
+    try {
+      const result  = await _confirmationResult.confirm(otp);
+      const idToken = await result.user.getIdToken();
+      const phone   = result.user.phoneNumber;
+
+      // Send token to our backend
+      const resp = await fetch('/auth/phone/verify', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ idToken, phone }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        window.location.href = '/';
+      } else {
+        showError(data.error || 'Verification failed.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Verify & Sign In';
+      }
+    } catch (err) {
+      console.error(err);
+      showError(err.message || 'Invalid OTP. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Verify & Sign In';
+    }
+  }
+
+  function resetPhoneForm() {
+    clearError();
+    _confirmationResult = null;
+    document.getElementById('phone-section').style.display = 'flex';
+    document.getElementById('otp-section').style.display   = 'none';
+    document.getElementById('phone-input').value = '';
+    Array.from({length:6}, (_, i) => {
+      document.getElementById(`otp-${i}`).value = '';
+    });
+    const btn = document.getElementById('send-otp-btn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send OTP';
+  }
+
+  // OTP digit auto-advance
+  document.querySelectorAll('.otp-digit').forEach((input, idx, all) => {
+    input.addEventListener('input', () => {
+      if (input.value && idx < all.length - 1) all[idx + 1].focus();
+      if (input.value.length > 1) input.value = input.value.slice(-1);
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !input.value && idx > 0) all[idx - 1].focus();
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Dashboard — ClinicFlow</title>
+  <meta name="description" content="Clinic analytics dashboard with appointment trends, wait time analysis, doctor load comparison, and ML model accuracy charts." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics" class="active"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- PAGE TITLE -->
+<div class="page-title-bar">
+  <div class="container" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div>
+      <h1><i class="fa-solid fa-chart-line"></i> Clinic Analytics</h1>
+      <p>Decision-support dashboard for clinic management · Powered by ML</p>
+    </div>
+    <div class="range-filter" style="margin-bottom:0;">
+      <button class="range-btn active" id="range-week" onclick="setRange('week', this)">This Week</button>
+      <button class="range-btn" id="range-month" onclick="setRange('month', this)">This Month</button>
+      <button class="range-btn" id="range-last_month" onclick="setRange('last_month', this)">Last Month</button>
+    </div>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:32px;">
+  <div class="container analytics-layout">
+
+    <!-- KPI ROW -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fa-solid fa-calendar-check"></i></div>
+        <div class="kpi-value data-font" id="kpi-total">—</div>
+        <div class="kpi-label">Total Appointments</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+        <div class="kpi-value data-font" id="kpi-wait"><span>—</span><small style="font-size:1rem; color:var(--muted);"> min</small></div>
+        <div class="kpi-label">Avg Wait Time</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fa-solid fa-user-slash"></i></div>
+        <div class="kpi-value data-font" id="kpi-noshow"><span>—</span><small style="font-size:1rem; color:var(--muted);">%</small></div>
+        <div class="kpi-label">No-Show Rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon"><i class="fa-solid fa-fire"></i></div>
+        <div class="kpi-value data-font" id="kpi-busy">—</div>
+        <div class="kpi-label">Busiest Hour Today</div>
+      </div>
+    </div>
+
+    <!-- ROW 2 — Day of Week Bar + Wait Time Trend -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i> &nbsp;Appointments by Day of Week</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Last 4 weeks aggregate</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chart-by-day"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-chart-line" style="color:var(--accent);"></i> &nbsp;Avg Wait Time Trend</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Daily average in minutes</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chart-wait-trend"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3 — Status Doughnut + Doctor Load -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-circle-half-stroke" style="color:var(--warning);"></i> &nbsp;Appointment Status Breakdown</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Done / No Show / Waiting / In Progress</span>
+        </div>
+        <div class="card-body" style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+          <div class="chart-container" style="flex:1; min-width:200px;">
+            <canvas id="chart-status"></canvas>
+          </div>
+          <div id="status-legend" style="display:flex; flex-direction:column; gap:10px; min-width:140px;">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-user-doctor" style="color:var(--danger);"></i> &nbsp;Doctor-wise Load</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Total appointments per doctor</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chart-doctor-load"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4 — Hourly Volume Area + Predicted vs Actual Scatter -->
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-wave-square" style="color:var(--primary);"></i> &nbsp;Hourly Appointment Volume</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Peak hours throughout the day</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chart-hourly"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-brain" style="color:var(--accent);"></i> &nbsp;ML Model Accuracy</h3>
+          <span style="font-size:0.75rem; color:var(--muted);">Predicted vs Actual Wait Time</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="chart-pva"></canvas>
+          </div>
+          <p style="font-size:0.75rem; color:var(--muted); margin-top:8px; text-align:center;">
+            <i class="fa-solid fa-info-circle"></i>
+            Points near the diagonal line indicate accurate predictions
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  ClinicFlow Analytics &nbsp;·&nbsp; GTU Societal Internship BE05000011 &nbsp;·&nbsp;
+  Charts powered by <span>Chart.js</span>
+</footer>
+
+<div id="toast-container"></div>
+<script src="/static/js/analytics.js"></script>
+</body>
+</html>

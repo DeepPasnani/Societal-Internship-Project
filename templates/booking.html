@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Appointment — ClinicFlow</title>
+  <meta name="description" content="Book a healthcare appointment in 3 easy steps. Get a live token and AI-predicted wait time." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking" class="active"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- LANGUAGE TOGGLE -->
+<div class="lang-toggle">
+  <button class="lang-btn active" id="lang-en" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" id="lang-gu" onclick="setLang('gu')">ગુ</button>
+</div>
+
+<!-- PAGE TITLE -->
+<div class="page-title-bar">
+  <div class="container">
+    <h1><i class="fa-solid fa-calendar-plus"></i> <span data-i18n="bookAppointment">Book Appointment</span></h1>
+    <p>Fill in 3 simple steps — get your token instantly</p>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:32px;">
+  <div class="container">
+
+    <!-- BOOKING FORM / SUCCESS toggle -->
+    <div id="booking-form-wrap">
+      <div class="booking-layout">
+
+        <!-- STEP SIDEBAR -->
+        <div class="step-sidebar">
+          <div class="card">
+            <div class="card-body" style="padding:16px;">
+              <ul class="step-list">
+                <li class="step-item active" id="sidebar-step-1">
+                  <div class="step-number">1</div>
+                  <div class="step-info">
+                    <span data-i18n="step1">Patient Details</span>
+                    <small>Name, Phone, Age</small>
+                  </div>
+                </li>
+                <li class="step-item" id="sidebar-step-2">
+                  <div class="step-number">2</div>
+                  <div class="step-info">
+                    <span data-i18n="step2">Doctor & Time</span>
+                    <small>Doctor, Date, Slot</small>
+                  </div>
+                </li>
+                <li class="step-item" id="sidebar-step-3">
+                  <div class="step-number">3</div>
+                  <div class="step-info">
+                    <span data-i18n="step3">Confirmation</span>
+                    <small>Review & Submit</small>
+                  </div>
+                </li>
+              </ul>
+
+              <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+                <p style="font-size:0.78rem; color:var(--muted); text-align:center;">
+                  <i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i>
+                  Your data is private &amp; secure
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clinic Info card -->
+          <div class="card" style="margin-top:16px;">
+            <div class="card-body" style="padding:16px;">
+              <h4 style="font-size:0.85rem; margin-bottom:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Clinic Hours</h4>
+              <div style="display:flex; flex-direction:column; gap:8px; font-size:0.82rem;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span><i class="fa-solid fa-moon" style="color:var(--primary);"></i> Morning</span>
+                  <strong>09:00 – 13:00</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span><i class="fa-solid fa-sun" style="color:var(--warning);"></i> Evening</span>
+                  <strong>14:00 – 18:00</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; color:var(--muted);">
+                  <span><i class="fa-solid fa-xmark" style="color:var(--danger);"></i> Sunday</span>
+                  <strong>Closed</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP CONTENT AREA -->
+        <div>
+
+          <!-- ── STEP 1: Patient Details ── -->
+          <div class="card step-content active" id="step-1">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-user" style="color:var(--primary);"></i> &nbsp;<span data-i18n="step1">Patient Details</span></h3>
+              <span style="font-size:0.8rem; color:var(--muted);">Step 1 of 3</span>
+            </div>
+            <div class="card-body">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="inp-name" data-i18n="yourName">Your Name</label>
+                  <input type="text" id="inp-name" class="form-control" placeholder="e.g. Arjun Patel" required autocomplete="name" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="inp-phone" data-i18n="phoneNumber">Phone Number</label>
+                  <input type="tel" id="inp-phone" class="form-control" placeholder="10-digit mobile number" maxlength="10" required autocomplete="tel" />
+                </div>
+              </div>
+              <div class="form-group" style="max-width:200px;">
+                <label class="form-label" for="inp-age">Age</label>
+                <input type="number" id="inp-age" class="form-control" placeholder="e.g. 32" min="0" max="120" />
+              </div>
+
+              <div id="step1-error" class="alert alert-error" style="display:none;"></div>
+
+              <div style="text-align:right; margin-top:8px;">
+                <button class="btn btn-primary" onclick="goToStep(2)">
+                  Next: Select Doctor &nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── STEP 2: Doctor & Time ── -->
+          <div class="card step-content" id="step-2">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-user-doctor" style="color:var(--primary);"></i> &nbsp;<span data-i18n="step2">Doctor &amp; Time</span></h3>
+              <span style="font-size:0.8rem; color:var(--muted);">Step 2 of 3</span>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label" data-i18n="selectDoctor">Select Doctor</label>
+                <div class="doctor-grid" id="doctor-cards">
+                  <div style="color:var(--muted); font-size:0.9rem; padding:12px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading doctors...
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="inp-date" data-i18n="selectDate">Select Date</label>
+                  <input type="date" id="inp-date" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Select Time Slot</label>
+                  <div id="slot-container">
+                    <p style="color:var(--muted); font-size:0.875rem; padding:8px 0;">
+                      <i class="fa-solid fa-info-circle"></i> Select a doctor and date first
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div id="step2-error" class="alert alert-error" style="display:none;"></div>
+
+              <div style="display:flex; justify-content:space-between; margin-top:8px;">
+                <button class="btn btn-ghost" onclick="goToStep(1)">
+                  <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-primary" onclick="goToStep(3)">
+                  Next: Confirm &nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── STEP 3: Confirmation ── -->
+          <div class="card step-content" id="step-3">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-circle-check" style="color:var(--accent);"></i> &nbsp;<span data-i18n="step3">Confirmation</span></h3>
+              <span style="font-size:0.8rem; color:var(--muted);">Step 3 of 3</span>
+            </div>
+            <div class="card-body">
+              <div class="confirm-card">
+                <h4 style="margin-bottom:16px; font-size:0.9rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;">Booking Summary</h4>
+                <div class="confirm-row">
+                  <span class="confirm-label"><i class="fa-solid fa-user"></i> Patient</span>
+                  <span class="confirm-value" id="confirm-name">—</span>
+                </div>
+                <div class="confirm-row">
+                  <span class="confirm-label"><i class="fa-solid fa-phone"></i> Phone</span>
+                  <span class="confirm-value" id="confirm-phone">—</span>
+                </div>
+                <div class="confirm-row">
+                  <span class="confirm-label"><i class="fa-solid fa-user-doctor"></i> Doctor</span>
+                  <span class="confirm-value" id="confirm-doctor">—</span>
+                </div>
+                <div class="confirm-row">
+                  <span class="confirm-label"><i class="fa-solid fa-calendar"></i> Date</span>
+                  <span class="confirm-value" id="confirm-date">—</span>
+                </div>
+                <div class="confirm-row">
+                  <span class="confirm-label"><i class="fa-solid fa-clock"></i> Time</span>
+                  <span class="confirm-value" id="confirm-time">—</span>
+                </div>
+              </div>
+
+              <div style="margin-top:16px; padding:14px 18px; background:var(--warning-light); border-radius:var(--radius-sm); font-size:0.875rem; color:#7c5700;">
+                <i class="fa-solid fa-brain"></i> &nbsp;
+                The AI model will predict your estimated wait time after booking.
+              </div>
+
+              <div id="step3-error" class="alert alert-error" style="display:none;"></div>
+
+              <div style="display:flex; justify-content:space-between; margin-top:20px;">
+                <button class="btn btn-ghost" onclick="goToStep(2)">
+                  <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-accent btn-lg" id="submit-btn" onclick="submitBooking()">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span data-i18n="confirmBooking">Confirm Booking</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end step content area -->
+      </div><!-- end booking layout -->
+    </div><!-- end booking-form-wrap -->
+
+    <!-- ── SUCCESS SCREEN ── -->
+    <div class="card success-screen" id="success-screen">
+      <div class="card-body">
+        <i class="fa-solid fa-circle-check" style="font-size:3.5rem; color:var(--accent);"></i>
+        <h2 style="margin-top:16px; font-size:1.8rem;">Appointment Confirmed!</h2>
+        <p style="color:var(--muted); margin-bottom:24px;">Your token has been generated successfully.</p>
+
+        <div>
+          <p style="font-size:0.85rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em;" data-i18n="tokenNumber">Your Token Number</p>
+          <div class="token-display data-font" id="success-token">—</div>
+        </div>
+
+        <div class="predicted-wait-chip" id="success-wait-chip">
+          <i class="fa-solid fa-brain"></i>
+          <span data-i18n="predictedWait">Predicted Wait Time</span>: &nbsp;
+          <strong id="success-wait" class="data-font">—</strong>&nbsp;<span data-i18n="minutes">minutes</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:480px; margin:0 auto 28px; text-align:left;">
+          <div style="padding:14px; background:var(--bg); border-radius:var(--radius-sm);">
+            <small style="color:var(--muted); font-size:0.75rem; display:block; margin-bottom:4px;"><i class="fa-solid fa-user-doctor"></i> Doctor</small>
+            <strong id="success-doctor">—</strong>
+          </div>
+          <div style="padding:14px; background:var(--bg); border-radius:var(--radius-sm);">
+            <small style="color:var(--muted); font-size:0.75rem; display:block; margin-bottom:4px;"><i class="fa-solid fa-clock"></i> Time</small>
+            <strong id="success-time">—</strong>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <a href="/token" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-ticket"></i> View Live Queue
+          </a>
+          <button class="btn btn-ghost btn-lg" onclick="resetBooking()">
+            <i class="fa-solid fa-plus"></i> New Booking
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  ClinicFlow &nbsp;·&nbsp; GTU Societal Internship BE05000011
+</footer>
+
+<div id="toast-container"></div>
+<script src="/static/js/booking.js"></script>
+</body>
+</html>

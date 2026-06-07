@@ -1,0 +1,60 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+.env/
+
+# ── Environment & secrets ─────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Database ──────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── ML model artifacts ────────────────────────────────────
+model/wait_model.pkl
+data/training_appointments.csv
+data/KaggleV2-May-2016.csv
+
+# ── IDE / editor ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Docker ────────────────────────────────────────────────
+.docker/
+
+# ── Testing ───────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Jupyter ───────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Node (if frontend tooling added later) ────────────────
+node_modules/

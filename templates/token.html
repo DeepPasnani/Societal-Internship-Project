@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Token Queue — ClinicFlow</title>
+  <meta name="description" content="Live token queue display for clinic waiting rooms. Real-time updates every 8 seconds." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="token-page">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token" class="active"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div style="padding-top: var(--nav-h);">
+
+  <!-- NOW SERVING HERO -->
+  <section class="token-hero">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h1 style="font-size:1.5rem; color:white; margin-bottom:4px;">
+            <i class="fa-solid fa-ticket" style="color:var(--primary);"></i>
+            Live Token Queue
+          </h1>
+          <p style="color:rgba(255,255,255,0.45); font-size:0.85rem;" id="queue-date">Today</p>
+        </div>
+        <div class="refresh-indicator">
+          <div class="refresh-dot"></div>
+          <span>Auto-refresh every 8s &nbsp;·&nbsp; Last updated: <span id="last-updated">—</span></span>
+        </div>
+      </div>
+
+      <!-- NOW SERVING CARD -->
+      <div class="now-serving-card">
+        <div style="position:relative; z-index:1;">
+          <p class="ns-label">
+            <span class="ns-status-dot"></span>
+            Now Serving
+          </p>
+          <div class="ns-token data-font" id="ns-token">—</div>
+          <p class="ns-doctor" id="ns-doctor">Waiting for first patient...</p>
+        </div>
+      </div>
+
+      <!-- UP NEXT -->
+      <div class="up-next-row">
+        <div class="next-token-chip">
+          <p class="chip-label">Up Next</p>
+          <div class="chip-num data-font" id="next-1">—</div>
+        </div>
+        <div class="next-token-chip">
+          <p class="chip-label">After That</p>
+          <div class="chip-num data-font" id="next-2">—</div>
+        </div>
+        <div class="next-token-chip" style="flex:2;">
+          <p class="chip-label">Total Waiting</p>
+          <div class="chip-num data-font" id="total-waiting">0</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEUE TABLE SECTION -->
+  <div style="padding: 32px 0 48px;">
+    <div class="container">
+
+      <!-- FILTER TABS -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
+        <div class="queue-tabs" id="queue-tabs">
+          <button class="queue-tab active" data-doctor-id="" onclick="filterByDoctor(null, this)">
+            <i class="fa-solid fa-users"></i> All Doctors
+          </button>
+          <!-- Doctor tabs injected by JS -->
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshQueue()" id="refresh-btn" style="background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:rgba(255,255,255,0.7);">
+          <i class="fa-solid fa-rotate-right"></i> Refresh Now
+        </button>
+      </div>
+
+      <!-- QUEUE TABLE -->
+      <div class="queue-table-wrap">
+        <table class="queue-table" id="queue-table">
+          <thead>
+            <tr>
+              <th>Token #</th>
+              <th>Patient</th>
+              <th>Doctor</th>
+              <th>Time</th>
+              <th>Est. Wait</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="queue-tbody">
+            <tr>
+              <td colspan="7" style="text-align:center; padding:32px; color:rgba(255,255,255,0.3);">
+                <i class="fa-solid fa-spinner fa-spin"></i> Loading queue...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/static/js/token.js"></script>
+</body>
+</html>

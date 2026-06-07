@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard — ClinicFlow</title>
+  <meta name="description" content="Doctor schedule management dashboard with appointment status updates and weekly calendar view." />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      ClinicFlow
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor" class="active"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- PAGE TITLE -->
+<div class="page-title-bar">
+  <div class="container">
+    <h1><i class="fa-solid fa-user-doctor"></i> Doctor Dashboard</h1>
+    <p>Manage schedules, update appointment statuses, and track performance</p>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:32px;">
+  <div class="container">
+    <div class="doctor-layout">
+
+      <!-- LEFT: Doctor Selector -->
+      <div class="doctor-sidebar">
+        <div class="card doctor-select-card">
+          <div style="margin-bottom:12px;">
+            <h3 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted);">
+              <i class="fa-solid fa-user-doctor"></i> Select Doctor
+            </h3>
+          </div>
+          <div id="doctor-list">
+            <div style="color:var(--muted); font-size:0.9rem; padding:12px;">
+              <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+            </div>
+          </div>
+        </div>
+
+        <!-- Date picker -->
+        <div class="card" style="margin-top:16px;">
+          <div class="card-body" style="padding:16px;">
+            <label class="form-label" for="schedule-date"><i class="fa-solid fa-calendar"></i> Schedule Date</label>
+            <input type="date" id="schedule-date" class="form-control" />
+            <button class="btn btn-primary btn-sm" style="width:100%; margin-top:10px;" onclick="loadSchedule()">
+              <i class="fa-solid fa-rotate-right"></i> Refresh Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Schedule Content -->
+      <div id="schedule-content">
+        <!-- Empty state -->
+        <div class="card">
+          <div class="card-body empty-state">
+            <i class="fa-solid fa-user-doctor" style="color:var(--primary);"></i>
+            <h3>Select a Doctor</h3>
+            <p>Choose a doctor from the left panel to view their schedule and appointments.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- STATUS UPDATE MODAL -->
+<div id="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border-radius:var(--radius); padding:32px; max-width:360px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+    <h3 style="margin-bottom:8px;">Update Status</h3>
+    <p style="color:var(--muted); font-size:0.875rem; margin-bottom:20px;">Token #<span id="modal-token"></span> — <span id="modal-patient"></span></p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="btn btn-warning" onclick="updateStatus('In Progress')">
+        <i class="fa-solid fa-hourglass-half"></i> Mark In Progress
+      </button>
+      <button class="btn btn-accent" onclick="updateStatus('Done')">
+        <i class="fa-solid fa-circle-check"></i> Mark Done
+      </button>
+      <button class="btn btn-danger" onclick="updateStatus('No Show')">
+        <i class="fa-solid fa-user-slash"></i> Mark No Show
+      </button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  ClinicFlow &nbsp;·&nbsp; Doctor Dashboard &nbsp;·&nbsp; GTU Internship BE05000011
+</footer>
+
+<div id="toast-container"></div>
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>
