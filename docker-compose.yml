@@ -27,7 +27,7 @@ services:
       FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
     healthcheck:
       test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/today-stats')"]
+             "import urllib.request; urllib.request.urlopen('http://localhost:8196/api/today-stats')"]
       interval: 30s
       timeout: 10s
       retries: 3
