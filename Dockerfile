@@ -32,7 +32,7 @@ RUN mkdir -p /app/data /app/model && \
 RUN python model/train.py --rows 2000
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8196
 
 # Environment defaults (override in docker-compose or at runtime)
 ENV FLASK_DEBUG=false \
@@ -49,7 +49,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 
 # Entrypoint: init DB then launch gunicorn
 CMD ["sh", "-c", "python -c 'from database import init_db; init_db()' && \
-     gunicorn --bind 0.0.0.0:5000 \
+     gunicorn --bind 0.0.0.0:8196 \
               --workers 2 \
               --threads 4 \
               --timeout 120 \
