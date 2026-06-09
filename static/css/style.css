@@ -1198,3 +1198,139 @@ body.token-page .badge-noshow     { background: rgba(225,112,85,0.15);  color: #
   .kpi-row { grid-template-columns: 1fr; }
   .hero-cta { flex-direction: column; align-items: center; }
 }
+
+/* ============================================================
+   BOOKING FORM — MOBILE FIX (patch added for production)
+   Fixes overlapping fields and layout issues on small screens
+   ============================================================ */
+
+/* Ensure form controls never overflow */
+.form-control {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Stack grid-2 on all mobile */
+@media (max-width: 640px) {
+  .booking-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Hide step sidebar on very small screens, show compact header instead */
+  .step-sidebar {
+    position: static;
+  }
+
+  .step-list {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .step-item {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 8px;
+    gap: 6px;
+    min-width: 80px;
+  }
+
+  .step-info small { display: none; }
+  .step-info span  { font-size: 0.75rem; }
+
+  /* Step 1: name + phone stack vertically, never side-by-side */
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  /* Age field full-width on mobile too */
+  .form-group[style*="max-width:200px"],
+  .form-group[style*="max-width: 200px"] {
+    max-width: 100% !important;
+  }
+
+  /* Doctor cards single column */
+  .doctor-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .doctor-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .doc-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px;
+    border-radius: 10px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* Slot grid wraps nicely */
+  .slot-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .time-slot {
+    padding: 8px 4px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Confirm card rows stack label + value */
+  .confirm-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 0;
+  }
+
+  .confirm-label { font-size: 0.75rem; }
+  .confirm-value { font-size: 0.9rem; word-break: break-word; }
+
+  /* Card body padding tighter on mobile */
+  .card-body { padding: 16px !important; }
+  .card-header { padding: 14px 16px !important; }
+
+  /* Button rows stack on very small */
+  .card-body > div[style*="justify-content:space-between"],
+  .card-body > div[style*="justify-content: space-between"] {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card-body > div[style*="justify-content:space-between"] > button,
+  .card-body > div[style*="justify-content: space-between"] > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Success screen grid */
+  #success-screen .card-body > div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .slot-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .step-item { min-width: 68px; }
+}
+
+/* Age field — constrained on desktop, full-width on mobile */
+.age-field { max-width: 200px; }
+@media (max-width: 640px) {
+  .age-field { max-width: 100%; }
+}

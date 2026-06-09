@@ -22,9 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('navLinks').classList.toggle('open');
   });
 
-  // Default date = today
+  // Default date = today; disallow past dates
   const dateInput = document.getElementById('schedule-date');
-  dateInput.value = new Date().toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
+  dateInput.min   = todayStr;
+  dateInput.value = todayStr;
   dateInput.addEventListener('change', loadSchedule);
 
   loadDoctors();
