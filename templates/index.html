@@ -52,39 +52,39 @@
   <div class="hb-container">
     <h1 class="hb-hero-title">Find Care by Specialty</h1>
     <div class="hb-specialty-grid">
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=general" class="hb-specialty-card">
         <span class="hb-sp-icon">🩺</span>
         <span>General<br>Physicians</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=pediatric" class="hb-specialty-card">
         <span class="hb-sp-icon">👶</span>
         <span>Pediatricians</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=dental" class="hb-specialty-card">
         <span class="hb-sp-icon">🦷</span>
         <span>Dentists</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=ent" class="hb-specialty-card">
         <span class="hb-sp-icon">👂</span>
         <span>ENT</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=gynecol" class="hb-specialty-card">
         <span class="hb-sp-icon">👩‍⚕️</span>
         <span>Gynecologists</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=cardio" class="hb-specialty-card">
         <span class="hb-sp-icon">❤️</span>
         <span>Cardiologists</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=derma" class="hb-specialty-card">
         <span class="hb-sp-icon">🧴</span>
         <span>Dermatologists</span>
       </a>
-      <a href="/booking" class="hb-specialty-card">
+      <a href="/doctors?specialty=psychi" class="hb-specialty-card">
         <span class="hb-sp-icon">🧠</span>
         <span>Psychiatrists</span>
       </a>
-      <a href="/booking" class="hb-specialty-card hb-view-all">
+      <a href="/doctors" class="hb-specialty-card hb-view-all">
         <span class="hb-sp-icon">🔍</span>
         <span>View All Specialties →</span>
       </a>
@@ -100,7 +100,7 @@
     <div class="hb-section-header">
       <div>
         <h2 class="hb-section-title">Top Hospitals Near You</h2>
-        <p class="hb-section-sub">Auto-detected by your location</p>
+        <p class="hb-section-sub" id="location-sub">Detecting your location...</p>
       </div>
       <a href="#" class="hb-view-all-link">View All</a>
     </div>
@@ -597,9 +597,9 @@
         <div class="hb-app-feat"><i class="fa-solid fa-lock"></i> Secure Payments</div>
         <div class="hb-app-feat"><i class="fa-solid fa-star"></i> Doctor Reviews</div>
       </div>
-      <div class="hb-app-badges">
-        <a href="#" class="hb-store-btn"><i class="fa-brands fa-apple"></i> App Store</a>
-        <a href="#" class="hb-store-btn"><i class="fa-brands fa-google-play"></i> Google Play</a>
+        <div class="hb-app-badges">
+        <a href="https://play.google.com/store" target="_blank" rel="noopener" class="hb-store-btn"><i class="fa-brands fa-google-play"></i> Google Play</a>
+        <a href="https://apps.apple.com" target="_blank" rel="noopener" class="hb-store-btn"><i class="fa-brands fa-apple"></i> App Store</a>
       </div>
       <div class="hb-app-rating-row">
         <span class="hb-app-rating">4.8★ App Store Rating</span>
@@ -740,6 +740,32 @@
       const el = document.getElementById('stat-total');
       if(el) el.textContent = '50,000+';
     });
+
+  // ── FIX 4: Geolocation detection for "Near You" ──────────
+  const locSub = document.getElementById('location-sub');
+  if (locSub && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(4);
+        const lon = pos.coords.longitude.toFixed(4);
+        // Reverse geocode with free nominatim API
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+          .then(r => r.json())
+          .then(data => {
+            const addr = data.address || {};
+            const area = addr.suburb || addr.neighbourhood || addr.city_district || addr.town || addr.city || '';
+            const city = addr.city || addr.town || addr.county || '';
+            const loc  = [area, city].filter(Boolean).join(', ');
+            locSub.textContent = loc ? `Near you · ${loc}` : 'Near your location';
+          })
+          .catch(() => { locSub.textContent = 'Near your location'; });
+      },
+      () => { locSub.textContent = 'Near you · Vadodara, Gujarat'; }
+    );
+  } else if (locSub) {
+    locSub.textContent = 'Near you · Vadodara, Gujarat';
+  }
 </script>
+<script src="/static/js/i18n.js"></script>
 </body>
 </html>

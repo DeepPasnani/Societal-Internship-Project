@@ -174,10 +174,14 @@
                 </div>
               </div>
 
+              <!-- Fee display (shown after doctor selected) -->
+              <div id="fee-display" style="display:none; align-items:center; gap:8px; padding:10px 16px; background:var(--primary-light); border-radius:var(--radius-sm); margin-bottom:20px; font-size:0.9rem; color:var(--primary); font-weight:600;"></div>
+
               <div class="grid-2">
                 <div class="form-group">
                   <label class="form-label" for="inp-date" data-i18n="selectDate">Select Date</label>
                   <input type="date" id="inp-date" class="form-control" />
+                  <div id="date-unavail-warn" class="alert alert-error" style="display:none; margin-top:6px; font-size:0.8rem;"></div>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Select Time Slot</label>
@@ -230,6 +234,10 @@
                 <div class="confirm-row">
                   <span class="confirm-label"><i class="fa-solid fa-clock"></i> Time</span>
                   <span class="confirm-value" id="confirm-time">—</span>
+                </div>
+                <div class="confirm-row" id="confirm-fee-row" style="display:none; border-top:2px solid var(--primary); margin-top:8px; padding-top:12px;">
+                  <span class="confirm-label" style="color:var(--primary); font-weight:700;"><i class="fa-solid fa-indian-rupee-sign"></i> <span data-i18n="amountDue">Amount Due</span></span>
+                  <span class="confirm-value" id="confirm-fee" style="color:var(--primary); font-size:1.1rem; font-weight:800;">—</span>
                 </div>
               </div>
 
@@ -306,5 +314,6 @@
 
 <div id="toast-container"></div>
 <script src="/static/js/booking.js"></script>
+<script src="/static/js/i18n.js"></script>
 </body>
 </html>

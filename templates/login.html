@@ -143,17 +143,30 @@
     {% endif %}
 
     <!-- Google Sign In -->
+    {% if google_client_id %}
     <a href="/auth/google" class="btn-google">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
       Continue with Google
     </a>
+    {% else %}
+    <div class="auth-error" style="display:block; margin-bottom:4px;">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Google sign-in is not configured. Set <strong>GOOGLE_CLIENT_ID</strong> and <strong>GOOGLE_CLIENT_SECRET</strong> in your <code>.env</code> file to enable this.
+    </div>
+    {% endif %}
 
     <div class="auth-divider">or sign in with phone</div>
 
     <!-- Phone OTP -->
     <div id="auth-error" class="auth-error"></div>
 
-    <!-- Phone number entry -->
+    {% if not firebase_api_key %}
+    <div style="padding:14px 16px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:0.83rem; color:var(--muted); line-height:1.6;">
+      <i class="fa-solid fa-info-circle" style="color:var(--primary);"></i>
+      <strong>Phone sign-in not configured.</strong><br>
+      Set <code>FIREBASE_API_KEY</code> and <code>FIREBASE_PROJECT_ID</code> in your <code>.env</code> file to enable OTP login.
+    </div>
+    {% else %}
     <div id="phone-section" class="phone-form">
       <div>
         <label class="form-label">Mobile Number</label>
@@ -198,6 +211,7 @@
         ← Change number
       </button>
     </div>
+    {% endif %}
 
   </div>
 </div>

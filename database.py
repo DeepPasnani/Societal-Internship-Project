@@ -30,12 +30,13 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS doctors (
-            id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            name           TEXT NOT NULL,
-            specialization TEXT NOT NULL,
-            available_days TEXT,
-            start_time     TEXT,
-            end_time       TEXT
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            name              TEXT NOT NULL,
+            specialization    TEXT NOT NULL,
+            available_days    TEXT,
+            start_time        TEXT,
+            end_time          TEXT,
+            consultation_fee  INTEGER DEFAULT 300
         );
 
         CREATE TABLE IF NOT EXISTS appointments (
@@ -79,16 +80,26 @@ def init_db():
     # Seed doctors
     if c.execute("SELECT COUNT(*) FROM doctors").fetchone()[0] == 0:
         doctors = [
-            ("Dr. Ramesh Patel",  "General Physician", "Mon,Tue,Wed,Thu,Fri", "09:00", "17:00"),
-            ("Dr. Priya Mehta",   "Pediatrician",      "Mon,Wed,Fri",         "10:00", "16:00"),
-            ("Dr. Suresh Shah",   "ENT Specialist",    "Tue,Thu,Sat",         "09:00", "14:00"),
-            ("Dr. Kavita Desai",  "Gynecologist",      "Mon,Tue,Thu,Fri",     "11:00", "18:00"),
+            ("Dr. Ramesh Patel",  "General Physician", "Mon,Tue,Wed,Thu,Fri", "09:00", "17:00", 300),
+            ("Dr. Priya Mehta",   "Pediatrician",      "Mon,Wed,Fri",         "10:00", "16:00", 400),
+            ("Dr. Suresh Shah",   "ENT Specialist",    "Tue,Thu,Sat",         "09:00", "14:00", 500),
+            ("Dr. Kavita Desai",  "Gynecologist",      "Mon,Tue,Thu,Fri",     "11:00", "18:00", 600),
         ]
         c.executemany(
-            "INSERT INTO doctors (name,specialization,available_days,start_time,end_time) VALUES (?,?,?,?,?)",
+            "INSERT INTO doctors (name,specialization,available_days,start_time,end_time,consultation_fee) VALUES (?,?,?,?,?,?)",
             doctors
         )
         conn.commit()
+    else:
+        # Migration: add consultation_fee if missing
+        cols = [row[1] for row in c.execute("PRAGMA table_info(doctors)").fetchall()]
+        if 'consultation_fee' not in cols:
+            c.execute("ALTER TABLE doctors ADD COLUMN consultation_fee INTEGER DEFAULT 300")
+            c.execute("UPDATE doctors SET consultation_fee=300 WHERE id=1")
+            c.execute("UPDATE doctors SET consultation_fee=400 WHERE id=2")
+            c.execute("UPDATE doctors SET consultation_fee=500 WHERE id=3")
+            c.execute("UPDATE doctors SET consultation_fee=600 WHERE id=4")
+            conn.commit()
 
     # Seed appointments
     if c.execute("SELECT COUNT(*) FROM appointments").fetchone()[0] == 0:

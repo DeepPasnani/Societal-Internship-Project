@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Doctors — HealthBook</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/healthbook.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      HealthBook
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> <span data-i18n="navHome">Home</span></a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> <span data-i18n="navBook">Book</span></a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> <span data-i18n="navQueue">Queue</span></a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> <span data-i18n="navDoctor">Doctor</span></a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> <span data-i18n="navAnalytics">Analytics</span></a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-title-bar">
+  <div class="container">
+    <h1><i class="fa-solid fa-user-doctor"></i> Find Doctors</h1>
+    <p id="page-subtitle">Browse all available doctors</p>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:32px; padding-bottom:64px;">
+  <div class="container">
+
+    <!-- Search & Filter Bar -->
+    <div class="doctors-filter-bar">
+      <div class="dfb-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="search-input" placeholder="Search by name or specialty..." oninput="filterDoctors()" />
+      </div>
+      <div class="dfb-tags" id="specialty-tags">
+        <button class="dfb-tag active" data-spec="" onclick="setSpecTag(this,'')">All</button>
+      </div>
+    </div>
+
+    <!-- Results count -->
+    <p id="results-count" style="color:var(--muted); font-size:0.85rem; margin-bottom:24px;"></p>
+
+    <!-- Doctor Cards Grid -->
+    <div class="fd-grid" id="doctors-grid">
+      <div style="padding:48px; text-align:center; color:var(--muted);">
+        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+        <p style="margin-top:12px;">Loading doctors...</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="site-footer">
+  HealthBook &nbsp;·&nbsp; GTU Societal Internship BE05000011
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+const DOC_COLORS = [
+  'linear-gradient(135deg,#1a6cf5,#5b8af5)',
+  'linear-gradient(135deg,#00b894,#00cec9)',
+  'linear-gradient(135deg,#6c5ce7,#a29bfe)',
+  'linear-gradient(135deg,#e17055,#fab1a0)',
+];
+const DOC_ICONS = ['fa-stethoscope','fa-baby','fa-ear-listen','fa-venus'];
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let allDoctors   = [];
+let activeSpec   = '{{ specialty | lower }}';
+let searchQuery  = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+  loadDoctors();
+});
+
+function loadDoctors() {
+  fetch('/api/doctors')
+    .then(r => r.json())
+    .then(docs => {
+      allDoctors = docs;
+      buildSpecTags(docs);
+      renderDoctors(filterList());
+    })
+    .catch(() => {
+      document.getElementById('doctors-grid').innerHTML =
+        '<p style="color:var(--danger); padding:24px;">Failed to load doctors. Please refresh.</p>';
+    });
+}
+
+function buildSpecTags(docs) {
+  const specs = [...new Set(docs.map(d => d.specialization))];
+  const container = document.getElementById('specialty-tags');
+  container.innerHTML = '<button class="dfb-tag' + (!activeSpec ? ' active' : '') + '" data-spec="" onclick="setSpecTag(this,\'\')">All</button>';
+  specs.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'dfb-tag' + (activeSpec && s.toLowerCase().includes(activeSpec) ? ' active' : '');
+    btn.setAttribute('data-spec', s.toLowerCase());
+    btn.textContent = s;
+    btn.onclick = function() { setSpecTag(this, s.toLowerCase()); };
+    container.appendChild(btn);
+  });
+}
+
+function setSpecTag(btn, spec) {
+  activeSpec = spec;
+  document.querySelectorAll('.dfb-tag').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDoctors(filterList());
+}
+
+function filterDoctors() {
+  searchQuery = document.getElementById('search-input').value.toLowerCase();
+  renderDoctors(filterList());
+}
+
+function filterList() {
+  return allDoctors.filter(d => {
+    const matchSpec   = !activeSpec || d.specialization.toLowerCase().includes(activeSpec);
+    const matchSearch = !searchQuery ||
+      d.name.toLowerCase().includes(searchQuery) ||
+      d.specialization.toLowerCase().includes(searchQuery);
+    return matchSpec && matchSearch;
+  });
+}
+
+function renderDoctors(docs) {
+  const grid    = document.getElementById('doctors-grid');
+  const count   = document.getElementById('results-count');
+  const today   = DAY_NAMES[new Date().getDay()];
+  const subEl   = document.getElementById('page-subtitle');
+
+  count.textContent = `${docs.length} doctor${docs.length !== 1 ? 's' : ''} found`;
+  if (activeSpec) {
+    const specLabel = docs[0]?.specialization || activeSpec;
+    subEl.textContent = `Showing: ${specLabel}`;
+  } else {
+    subEl.textContent = 'Browse all available doctors';
+  }
+
+  if (!docs.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1; padding:64px; text-align:center; color:var(--muted);">
+        <i class="fa-solid fa-user-doctor" style="font-size:3rem; opacity:.3;"></i>
+        <p style="margin-top:16px; font-size:1rem;">No doctors found matching your search.</p>
+        <button class="btn btn-ghost" style="margin-top:12px;" onclick="setSpecTag(document.querySelector('.dfb-tag'),'')">Clear filters</button>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = docs.map((doc, i) => {
+    const availDays = (doc.available_days || '').split(',').map(d => d.trim());
+    const isToday   = availDays.includes(today);
+    const availBadge = isToday
+      ? '<span class="fd-avail-badge fd-avail-green"><i class="fa-solid fa-circle"></i> Available Today</span>'
+      : '<span class="fd-avail-badge fd-avail-grey"><i class="fa-regular fa-circle"></i> Not Today</span>';
+    const feeBadge = doc.consultation_fee
+      ? `<span class="fd-fee-badge"><i class="fa-solid fa-indian-rupee-sign"></i> ₹${doc.consultation_fee}</span>`
+      : '';
+
+    return `
+      <div class="fd-card">
+        <div class="fd-card-header" style="background:${DOC_COLORS[i % 4]};">
+          <i class="fa-solid ${DOC_ICONS[i % 4]} fd-doc-icon"></i>
+          ${availBadge}
+        </div>
+        <div class="fd-card-body">
+          <h3 class="fd-name">${esc(doc.name)}</h3>
+          <p class="fd-spec">${esc(doc.specialization)}</p>
+          <div class="fd-meta">
+            <span><i class="fa-solid fa-calendar-days"></i> ${availDays.join(', ')}</span>
+            <span><i class="fa-solid fa-clock"></i> ${doc.start_time || '—'} – ${doc.end_time || '—'}</span>
+          </div>
+          <div class="fd-footer">
+            ${feeBadge}
+            <a href="/booking?doctor_id=${doc.id}" class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-calendar-plus"></i> Book Now
+            </a>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+<script src="/static/js/i18n.js"></script>
+</body>
+</html>
