@@ -259,8 +259,8 @@ function selectDoctor(id, name, docData) {
   // Show fee for selected doctor
   updateFeeDisplay();
 
-  const date = document.getElementById('inp-date').value;
-  if (date) loadSlots(id, date);
+  // Immediately validate chosen date against new doctor's availability
+  onDateChange();
 }
 
 function updateFeeDisplay() {
@@ -276,21 +276,30 @@ function updateFeeDisplay() {
 }
 
 function onDateChange() {
-  if (selectedDoctorId) {
-    const date = document.getElementById('inp-date').value;
-    // Warn if doctor unavailable on this day
-    if (selectedDoctorData) {
-      const dayIdx  = new Date(date + 'T00:00:00').getDay();
-      const dayName = DAY_NAMES_EN[dayIdx];
-      const availDays = (selectedDoctorData.available_days || '').split(',').map(d => d.trim());
-      const warnEl  = document.getElementById('date-unavail-warn');
-      if (!availDays.includes(dayName) && warnEl) {
-        warnEl.textContent = (translations[currentLang].doctorUnavail || 'Doctor unavailable. Available: ') + availDays.join(', ');
-        warnEl.style.display = 'block';
-      } else if (warnEl) {
-        warnEl.style.display = 'none';
-      }
+  const date = document.getElementById('inp-date').value;
+  const warnEl = document.getElementById('date-unavail-warn');
+  const nextBtn = document.getElementById('step2-next-btn');
+
+  if (selectedDoctorId && selectedDoctorData && date) {
+    const dayIdx  = new Date(date + 'T00:00:00').getDay();
+    const dayName = DAY_NAMES_EN[dayIdx];
+    const availDays = (selectedDoctorData.available_days || '').split(',').map(d => d.trim());
+
+    if (!availDays.includes(dayName)) {
+      const msg = (translations[currentLang].doctorUnavail || 'Doctor unavailable. Available: ') + availDays.join(', ');
+      if (warnEl) { warnEl.textContent = msg; warnEl.style.display = 'block'; }
+      // Clear slot grid and disable Next
+      const container = document.getElementById('slot-container');
+      if (container) container.innerHTML = `<div class="slot-unavail-msg"><i class="fa-solid fa-calendar-xmark"></i> ${translations[currentLang].noSlotsDay || 'Doctor does not work on this day.'}</div>`;
+      if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.5'; }
+      selectedSlot = null;
+      return;
+    } else {
+      if (warnEl) warnEl.style.display = 'none';
+      if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; }
     }
+    loadSlots(selectedDoctorId, date);
+  } else if (selectedDoctorId && date) {
     loadSlots(selectedDoctorId, date);
   }
 }

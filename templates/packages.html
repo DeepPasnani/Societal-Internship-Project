@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Packages — HealthBook</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/healthbook.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      HealthBook
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> <span data-i18n="navHome">Home</span></a></li>
+      <li><a href="/doctors"><i class="fa-solid fa-user-doctor"></i> <span data-i18n="navDoctors">Doctors</span></a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> <span data-i18n="navBook">Book</span></a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> <span data-i18n="navQueue">Queue</span></a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="page-title-bar">
+  <div class="container">
+    <h1><i class="fa-solid fa-box-open"></i> <span data-i18n="packagesTitle">Health Packages &amp; Offers</span></h1>
+    <p data-i18n="packagesSub">Select a package that fits your health needs</p>
+  </div>
+</div>
+
+<div class="page-body" style="padding-top:40px; padding-bottom:72px;">
+  <div class="container">
+
+    <!-- Offer Banners -->
+    <div class="pkg-offers-row">
+      <div class="pkg-offer-banner" style="background:linear-gradient(135deg,#00b894,#00cba5);">
+        <i class="fa-solid fa-stethoscope"></i>
+        <div>
+          <p class="pkg-offer-title">First Consultation Free</p>
+          <p class="pkg-offer-sub">For new users</p>
+        </div>
+        <span class="pkg-offer-code">FIRST100</span>
+      </div>
+      <div class="pkg-offer-banner" style="background:linear-gradient(135deg,#1a6cf5,#5b8af5);">
+        <i class="fa-solid fa-flask"></i>
+        <div>
+          <p class="pkg-offer-title">20% Off Lab Tests</p>
+          <p class="pkg-offer-sub">Valid till month end</p>
+        </div>
+        <span class="pkg-offer-code">LAB20</span>
+      </div>
+      <div class="pkg-offer-banner" style="background:linear-gradient(135deg,#e17055,#ff8c6b);">
+        <i class="fa-solid fa-truck-medical"></i>
+        <div>
+          <p class="pkg-offer-title">Emergency 24/7</p>
+          <p class="pkg-offer-sub">No extra charges</p>
+        </div>
+        <span class="pkg-offer-code">EMERGENCY</span>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="pkg-filter-tabs">
+      <button class="pkg-tab active" onclick="filterPackages('all', this)">All Packages</button>
+      <button class="pkg-tab" onclick="filterPackages('diagnostic', this)">Diagnostic</button>
+      <button class="pkg-tab" onclick="filterPackages('preventive', this)">Preventive</button>
+      <button class="pkg-tab" onclick="filterPackages('women', this)">Women's Health</button>
+      <button class="pkg-tab" onclick="filterPackages('cardiac', this)">Cardiac</button>
+    </div>
+
+    <!-- Package Cards -->
+    <div class="pkg-grid" id="pkg-grid">
+
+      <div class="pkg-card" data-category="diagnostic preventive">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">🩸</span>
+          <span class="pkg-popular">Most Popular</span>
+        </div>
+        <h3>Diabetes Screening</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹499</span>
+          <span class="pkg-price-old">₹899</span>
+          <span class="pkg-discount">44% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 6 hours</li>
+          <li><i class="fa-solid fa-users"></i> 500+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.8 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Home sample collection available</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included</p>
+          <div class="pkg-test-tags">
+            <span>HbA1c</span><span>Fasting Glucose</span>
+            <span>Random Glucose</span><span>Post-Prandial Glucose</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+      <div class="pkg-card" data-category="cardiac preventive">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">❤️</span>
+        </div>
+        <h3>Heart Health Checkup</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹999</span>
+          <span class="pkg-price-old">₹1599</span>
+          <span class="pkg-discount">38% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 24 hours</li>
+          <li><i class="fa-solid fa-users"></i> 300+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.9 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Visit centre required</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included</p>
+          <div class="pkg-test-tags">
+            <span>ECG</span><span>Echo</span>
+            <span>Lipid Profile</span><span>Treadmill Test</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+      <div class="pkg-card pkg-featured" data-category="preventive diagnostic">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">🏥</span>
+          <span class="pkg-popular">Most Popular</span>
+        </div>
+        <h3>Full Body Checkup</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹1799</span>
+          <span class="pkg-price-old">₹2999</span>
+          <span class="pkg-discount">40% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 24 hours</li>
+          <li><i class="fa-solid fa-users"></i> 1000+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.7 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Home sample collection available</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included (17 tests)</p>
+          <div class="pkg-test-tags">
+            <span>CBC</span><span>LFT</span><span>KFT</span>
+            <span>Thyroid</span><span>Lipid Profile</span><span>Blood Sugar</span>
+            <span>Urine Routine</span><span>+10 more</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+      <div class="pkg-card" data-category="women preventive">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">👩‍⚕️</span>
+        </div>
+        <h3>Women's Health Package</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹1499</span>
+          <span class="pkg-price-old">₹2499</span>
+          <span class="pkg-discount">40% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 48 hours</li>
+          <li><i class="fa-solid fa-users"></i> 250+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.8 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Visit centre required</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included</p>
+          <div class="pkg-test-tags">
+            <span>Pap Smear</span><span>Mammography</span>
+            <span>Bone Density</span><span>Thyroid</span><span>CBC</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+      <div class="pkg-card" data-category="diagnostic">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">🧠</span>
+        </div>
+        <h3>Senior Citizen Checkup</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹2199</span>
+          <span class="pkg-price-old">₹3499</span>
+          <span class="pkg-discount">37% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 48 hours</li>
+          <li><i class="fa-solid fa-users"></i> 180+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.9 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Home visit available</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included (22 tests)</p>
+          <div class="pkg-test-tags">
+            <span>CBC</span><span>LFT</span><span>KFT</span>
+            <span>ECG</span><span>Bone Density</span>
+            <span>Vitamin D &amp; B12</span><span>+16 more</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+      <div class="pkg-card" data-category="preventive">
+        <div class="pkg-card-top">
+          <span class="pkg-emoji">👶</span>
+        </div>
+        <h3>Child Health Package</h3>
+        <div class="pkg-price-row">
+          <span class="pkg-price-new">₹799</span>
+          <span class="pkg-price-old">₹1299</span>
+          <span class="pkg-discount">38% OFF</span>
+        </div>
+        <ul class="pkg-meta">
+          <li><i class="fa-regular fa-clock"></i> Reports in 12 hours</li>
+          <li><i class="fa-solid fa-users"></i> 320+ bookings this month</li>
+          <li><i class="fa-solid fa-star" style="color:#f59e0b;"></i> 4.8 rating</li>
+          <li><i class="fa-solid fa-location-dot"></i> Home sample collection available</li>
+        </ul>
+        <div class="pkg-tests">
+          <p class="pkg-tests-label">Tests Included</p>
+          <div class="pkg-test-tags">
+            <span>CBC</span><span>Blood Sugar</span>
+            <span>Vitamin D</span><span>Calcium</span><span>Iron Studies</span>
+          </div>
+        </div>
+        <a href="/booking" class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;">
+          <i class="fa-solid fa-calendar-plus"></i> Book Package
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  HealthBook &nbsp;·&nbsp; GTU Societal Internship BE05000011 &nbsp;·&nbsp; Vadodara
+</footer>
+
+<div id="toast-container"></div>
+
+<style>
+  .pkg-offers-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .pkg-offer-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    color: white;
+    font-size: 0.9rem;
+  }
+  .pkg-offer-banner > i { font-size: 1.6rem; flex-shrink: 0; }
+  .pkg-offer-title { font-weight: 700; font-size: 0.9rem; }
+  .pkg-offer-sub   { font-size: 0.75rem; opacity: .85; margin-top: 2px; }
+  .pkg-offer-code  {
+    margin-left: auto; background: rgba(255,255,255,.2);
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+  }
+  .pkg-filter-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+  }
+  .pkg-tab {
+    padding: 8px 18px; border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--muted);
+    font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .pkg-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .pkg-tab:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+  .pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .pkg-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .pkg-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.09); border-color: var(--primary); }
+  .pkg-featured   { border-color: var(--primary); box-shadow: 0 4px 20px rgba(26,108,245,.12); }
+
+  .pkg-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .pkg-emoji { font-size: 2rem; line-height: 1; }
+  .pkg-popular {
+    background: #e8f0fe; color: var(--primary);
+    font-size: 0.68rem; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .pkg-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+
+  .pkg-price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .pkg-price-new { font-size: 1.4rem; font-weight: 800; color: var(--text); font-family: var(--font-data); }
+  .pkg-price-old { font-size: 0.85rem; color: var(--muted); text-decoration: line-through; }
+  .pkg-discount  { background: #dcfce7; color: #16a34a; font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+
+  .pkg-meta { list-style: none; padding: 0; margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .pkg-meta li { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .pkg-meta li i { color: var(--primary); width: 14px; }
+
+  .pkg-tests { flex: 1; margin-bottom: 4px; }
+  .pkg-tests-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .pkg-test-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pkg-test-tags span { padding: 3px 9px; background: var(--bg); color: var(--muted); border-radius: 20px; font-size: 0.7rem; font-weight: 600; border: 1px solid var(--border); }
+
+  .pkg-card-hidden { display: none !important; }
+
+  @media (max-width: 900px) {
+    .pkg-grid { grid-template-columns: repeat(2, 1fr); }
+    .pkg-offers-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .pkg-grid { grid-template-columns: 1fr; }
+    .pkg-filter-tabs { gap: 6px; }
+    .pkg-tab { padding: 7px 13px; font-size: 0.8rem; }
+  }
+</style>
+
+<script>
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+
+  function filterPackages(category, btn) {
+    document.querySelectorAll('.pkg-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.pkg-card').forEach(card => {
+      if (category === 'all') {
+        card.classList.remove('pkg-card-hidden');
+      } else {
+        const cats = card.getAttribute('data-category') || '';
+        card.classList.toggle('pkg-card-hidden', !cats.includes(category));
+      }
+    });
+  }
+</script>
+<script src="/static/js/i18n.js"></script>
+</body>
+</html>

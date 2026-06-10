@@ -235,6 +235,11 @@ def booking():
     return render_template('booking.html', user=session.get('user'))
 
 
+@app.route('/packages')
+def packages():
+    return render_template('packages.html', user=session.get('user'))
+
+
 @app.route('/doctors')
 def doctors_page():
     specialty = request.args.get('specialty', '')

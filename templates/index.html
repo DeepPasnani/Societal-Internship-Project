@@ -28,7 +28,9 @@
       <li><a href="/booking">Health Packages</a></li>
     </ul>
     <div class="hb-nav-right">
-      <button class="hb-lang-btn"><i class="fa-solid fa-globe"></i> EN</button>
+      <button class="hb-lang-btn" id="navbar-lang-btn" onclick="hbToggleLang()" title="Switch to Gujarati / English">
+        <i class="fa-solid fa-globe"></i> <span id="global-lang-display">EN</span>
+      </button>
       {% if user %}
         <div class="hb-user-chip">
           <i class="fa-solid fa-circle-user"></i>
@@ -50,39 +52,39 @@
 ═══════════════════════════════════════ -->
 <section class="hb-hero">
   <div class="hb-container">
-    <h1 class="hb-hero-title">Find Care by Specialty</h1>
+    <h1 class="hb-hero-title" data-i18n="findCareTitle">Find Care by Specialty</h1>
     <div class="hb-specialty-grid">
       <a href="/doctors?specialty=general" class="hb-specialty-card">
         <span class="hb-sp-icon">🩺</span>
-        <span>General<br>Physicians</span>
+        <span data-i18n="specGeneral">General Physicians</span>
       </a>
       <a href="/doctors?specialty=pediatric" class="hb-specialty-card">
         <span class="hb-sp-icon">👶</span>
-        <span>Pediatricians</span>
+        <span data-i18n="specPediatric">Pediatricians</span>
       </a>
       <a href="/doctors?specialty=dental" class="hb-specialty-card">
         <span class="hb-sp-icon">🦷</span>
-        <span>Dentists</span>
+        <span data-i18n="specDental">Dentists</span>
       </a>
       <a href="/doctors?specialty=ent" class="hb-specialty-card">
         <span class="hb-sp-icon">👂</span>
-        <span>ENT</span>
+        <span data-i18n="specENT">ENT</span>
       </a>
       <a href="/doctors?specialty=gynecol" class="hb-specialty-card">
         <span class="hb-sp-icon">👩‍⚕️</span>
-        <span>Gynecologists</span>
+        <span data-i18n="specGynec">Gynecologists</span>
       </a>
       <a href="/doctors?specialty=cardio" class="hb-specialty-card">
         <span class="hb-sp-icon">❤️</span>
-        <span>Cardiologists</span>
+        <span data-i18n="specCardio">Cardiologists</span>
       </a>
       <a href="/doctors?specialty=derma" class="hb-specialty-card">
         <span class="hb-sp-icon">🧴</span>
-        <span>Dermatologists</span>
+        <span data-i18n="specDerma">Dermatologists</span>
       </a>
       <a href="/doctors?specialty=psychi" class="hb-specialty-card">
         <span class="hb-sp-icon">🧠</span>
-        <span>Psychiatrists</span>
+        <span data-i18n="specPsych">Psychiatrists</span>
       </a>
       <a href="/doctors" class="hb-specialty-card hb-view-all">
         <span class="hb-sp-icon">🔍</span>
@@ -99,10 +101,10 @@
   <div class="hb-container">
     <div class="hb-section-header">
       <div>
-        <h2 class="hb-section-title">Top Hospitals Near You</h2>
+        <h2 class="hb-section-title" data-i18n="topHospitals">Top Hospitals Near You</h2>
         <p class="hb-section-sub" id="location-sub">Detecting your location...</p>
       </div>
-      <a href="#" class="hb-view-all-link">View All</a>
+      <a href="/doctors" class="hb-view-all-link">View All</a>
     </div>
     <div class="hb-hospitals-grid">
       <div class="hb-hospital-card">
@@ -120,7 +122,7 @@
             <span class="hb-tag">Neurology</span>
             <span class="hb-tag">Oncology</span>
           </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Appointment</a>
+          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
         </div>
       </div>
       <div class="hb-hospital-card">
@@ -137,7 +139,7 @@
             <span class="hb-tag">Orthopedics</span>
             <span class="hb-tag">Pediatrics</span>
           </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Appointment</a>
+          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
         </div>
       </div>
       <div class="hb-hospital-card">
@@ -155,7 +157,7 @@
             <span class="hb-tag">ICU</span>
             <span class="hb-tag">Surgery</span>
           </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Appointment</a>
+          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
         </div>
       </div>
       <div class="hb-hospital-card">
@@ -172,7 +174,7 @@
             <span class="hb-tag">Gastroenterology</span>
             <span class="hb-tag">Nephrology</span>
           </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Appointment</a>
+          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
         </div>
       </div>
     </div>
@@ -186,10 +188,10 @@
   <div class="hb-container">
     <div class="hb-section-header">
       <div>
-        <h2 class="hb-section-title">Top Doctors by Specialty</h2>
-        <p class="hb-section-sub">Experienced doctors with live availability status</p>
+        <h2 class="hb-section-title" data-i18n="topDoctors">Top Doctors by Specialty</h2>
+        <p class="hb-section-sub" data-i18n="topDoctorsSub">Experienced doctors with live availability status</p>
       </div>
-      <a href="/doctor" class="hb-view-all-link">View All Doctors</a>
+      <a href="/doctor" class="hb-view-all-link">data-i18n="viewAllDoctors">View All Doctors</a>
     </div>
     <div class="hb-doctors-grid">
       <div class="hb-doctor-card">
@@ -208,8 +210,8 @@
           <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Marathi</p>
           <div class="hb-doc-footer">
             <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm">Book Now</a>
-              <a href="/doctor" class="hb-btn hb-btn-outline hb-btn-sm">View Profile</a>
+              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
+              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
             </div>
           </div>
         </div>
@@ -222,7 +224,7 @@
         <div class="hb-doc-body">
           <h3>Dr. Rajesh Patel</h3>
           <p class="hb-doc-qual">MBBS, MD</p>
-          <p class="hb-doc-spec">Pediatrician</p>
+          <p class="hb-doc-spec" data-i18n="specPediatric">Pediatrician</p>
           <div class="hb-doc-meta">
             <span><i class="fa-solid fa-star hb-star"></i> 4.7 <span class="hb-doc-reviews">(892)</span></span>
             <span>Fortis Healthcare</span>
@@ -230,8 +232,8 @@
           <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Gujarati</p>
           <div class="hb-doc-footer">
             <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm">Book Now</a>
-              <a href="/doctor" class="hb-btn hb-btn-outline hb-btn-sm">View Profile</a>
+              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
+              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
             </div>
           </div>
         </div>
@@ -244,7 +246,7 @@
         <div class="hb-doc-body">
           <h3>Dr. Anjali Reddy</h3>
           <p class="hb-doc-qual">MBBS, MD</p>
-          <p class="hb-doc-spec">Dermatologist</p>
+          <p class="hb-doc-spec" data-i18n="specDerma">Dermatologist</p>
           <div class="hb-doc-meta">
             <span><i class="fa-solid fa-star hb-star"></i> 4.8 <span class="hb-doc-reviews">(634)</span></span>
             <span>Lilavati Hospital</span>
@@ -252,8 +254,8 @@
           <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Telugu</p>
           <div class="hb-doc-footer">
             <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm">Book Now</a>
-              <a href="/doctor" class="hb-btn hb-btn-outline hb-btn-sm">View Profile</a>
+              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
+              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
             </div>
           </div>
         </div>
@@ -266,7 +268,7 @@
         <div class="hb-doc-body">
           <h3>Dr. Vikram Singh</h3>
           <p class="hb-doc-qual">MBBS, MS</p>
-          <p class="hb-doc-spec">Orthopedic Surgeon</p>
+          <p class="hb-doc-spec" data-i18n="specOrtho">Orthopedic Surgeon</p>
           <div class="hb-doc-meta">
             <span><i class="fa-solid fa-star hb-star"></i> 4.6 <span class="hb-doc-reviews">(1056)</span></span>
             <span>Hinduja Hospital</span>
@@ -274,8 +276,8 @@
           <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi</p>
           <div class="hb-doc-footer">
             <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm">Book Now</a>
-              <a href="/doctor" class="hb-btn hb-btn-outline hb-btn-sm">View Profile</a>
+              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
+              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
             </div>
           </div>
         </div>
@@ -291,8 +293,8 @@
   <div class="hb-container">
     <div class="hb-section-header">
       <div>
-        <h2 class="hb-section-title">Health Packages &amp; Special Offers</h2>
-        <p class="hb-section-sub">Comprehensive health checkups and exclusive offers designed for your wellness journey</p>
+        <h2 class="hb-section-title" data-i18n="healthPackages">Health Packages &amp; Special Offers</h2>
+        <p class="hb-section-sub" data-i18n="healthPackagesSub">Comprehensive health checkups and exclusive offers designed for your wellness journey</p>
       </div>
     </div>
     <!-- Offer Banners -->
@@ -346,7 +348,7 @@
             <span>HbA1c</span><span>Fasting Glucose</span><span>Random Glucose</span><span>+1 more</span>
           </div>
         </div>
-        <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Package</a>
+        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
       </div>
       <div class="hb-package-card">
         <div class="hb-pkg-icon">❤️</div>
@@ -369,7 +371,7 @@
             <span>ECG</span><span>Echo</span><span>Lipid Profile</span><span>+1 more</span>
           </div>
         </div>
-        <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Package</a>
+        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
       </div>
       <div class="hb-package-card hb-pkg-featured">
         <div class="hb-pkg-icon">🏥</div>
@@ -393,7 +395,7 @@
             <span>CBC</span><span>LFT</span><span>KFT</span><span>+3 more</span>
           </div>
         </div>
-        <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Package</a>
+        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
       </div>
       <div class="hb-package-card">
         <div class="hb-pkg-icon">👩‍⚕️</div>
@@ -416,11 +418,11 @@
             <span>Pap Smear</span><span>Mammography</span><span>Bone Density</span><span>+1 more</span>
           </div>
         </div>
-        <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block">Book Package</a>
+        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
       </div>
     </div>
     <div style="text-align:center;margin-top:32px;">
-      <a href="/booking" class="hb-btn hb-btn-outline">View All Health Packages</a>
+      <a href="/packages" class="hb-btn hb-btn-outline" data-i18n="viewAllPackages">View All Health Packages</a>
     </div>
   </div>
 </section>
@@ -430,8 +432,8 @@
 ═══════════════════════════════════════ -->
 <section class="hb-section hb-section-alt">
   <div class="hb-container">
-    <h2 class="hb-section-title hb-center">How It Works</h2>
-    <p class="hb-section-sub hb-center" style="margin-bottom:48px;">Book your appointments in just 4 simple steps. Our smart token system ensures you never have to wait in long queues.</p>
+    <h2 class="hb-section-title hb-center" data-i18n="howItWorks">How It Works</h2>
+    <p class="hb-section-sub hb-center" data-i18n="howItWorksSub" style="margin-bottom:48px;">Book your appointments in just 4 simple steps. Our smart token system ensures you never have to wait in long queues.</p>
     <div class="hb-steps-grid">
       <div class="hb-step">
         <div class="hb-step-num">1</div>
@@ -485,7 +487,7 @@
           <i class="fa-solid fa-ticket"></i>
           <span>🎯 Smart Token System</span>
         </div>
-        <a href="/token" class="hb-btn hb-btn-primary">View Live Queue <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="/token" class="hb-btn hb-btn-primary">data-i18n="viewLiveQueue">View Live Queue</span> <i class="fa-solid fa-arrow-right"></i></a>
       </div>
     </div>
   </div>
@@ -496,8 +498,8 @@
 ═══════════════════════════════════════ -->
 <section class="hb-trust-bar">
   <div class="hb-container">
-    <h2 class="hb-section-title hb-center" style="color:white;margin-bottom:8px;">Trusted by Thousands</h2>
-    <p class="hb-center" style="color:rgba(255,255,255,.6);margin-bottom:40px;">Join millions of patients who trust HealthBook for their healthcare needs</p>
+    <h2 class="hb-section-title hb-center" data-i18n="trustedBy" style="color:white;margin-bottom:8px;">Trusted by Thousands</h2>
+    <p class="hb-center" data-i18n="trustedBySub" style="color:rgba(255,255,255,.6);margin-bottom:40px;">Join millions of patients who trust HealthBook for their healthcare needs</p>
     <div class="hb-trust-stats">
       <div class="hb-trust-stat">
         <span class="hb-trust-icon">🏆</span>
@@ -649,22 +651,22 @@
       <div class="hb-footer-col">
         <h4>For Patients</h4>
         <ul>
-          <li><a href="#">Find Doctors</a></li>
-          <li><a href="#">Find Hospitals</a></li>
-          <li><a href="#">Book Lab Tests</a></li>
-          <li><a href="#">Emergency Services</a></li>
-          <li><a href="#">Health Packages</a></li>
-          <li><a href="#">Patient Reviews</a></li>
+          <li><a href="/doctors">Find Doctors</a></li>
+          <li><a href="/doctors">Find Hospitals</a></li>
+          <li><a href="/packages">Book Lab Tests</a></li>
+          <li><a href="/token">Emergency Services</a></li>
+          <li><a href="/packages">Health Packages</a></li>
+          <li><a href="/doctors">Patient Reviews</a></li>
         </ul>
       </div>
       <div class="hb-footer-col">
         <h4>For Healthcare</h4>
         <ul>
-          <li><a href="#">Join as Doctor</a></li>
-          <li><a href="#">Partner Hospital</a></li>
-          <li><a href="#">Commission Plans</a></li>
+          <li><a href="/doctor">Join as Doctor</a></li>
+          <li><a href="/doctor">Partner Hospital</a></li>
+          <li><a href="/doctor">Commission Plans</a></li>
           <li><a href="/doctor">Doctor Dashboard</a></li>
-          <li><a href="#">Practice Management</a></li>
+          <li><a href="/doctor">Practice Management</a></li>
           <li><a href="/token">Token System</a></li>
         </ul>
       </div>
