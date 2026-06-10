@@ -74,36 +74,43 @@ Training data is calibrated to real-world no-show statistics from the Kaggle Med
 | Charts | Chart.js 4.x |
 | Server | Gunicorn · Docker |
 
-## 🗂️ Project Structure
+## 📁 Project Structure
 
-Backend
-app.py          # Flask routes and authentication
-database.py     # Database operations and token management
-Machine Learning
-model/
-├── train.py
-├── predict.py
-└── wait_model.pkl
-Dataset
-data/
-└── KaggleV2-May-2016.csv
-Frontend Assets
-static/
-├── css/
-│   └── style.css
-└── js/
-    ├── booking.js
-    ├── token.js
-    ├── dashboard.js
-    └── analytics.js
-HTML Templates
-templates/
-├── login.html
-├── index.html
-├── booking.html
-├── token.html
-├── doctor.html
-└── analytics.html
+```text
+.
+├── app.py                      # All routes and authentication logic
+├── database.py                 # SQLite setup, WAL mode, atomic token allocation
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .gitignore
+│
+├── model/
+│   ├── train.py                # Model trainer
+│   ├── predict.py              # Wait time prediction with fallback formula
+│   └── wait_model.pkl          # Trained model file (auto-generated)
+│
+├── data/
+│   └── KaggleV2-May-2016.csv   # Optional real-world training data
+│
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   │
+│   └── js/
+│       ├── booking.js
+│       ├── token.js
+│       ├── dashboard.js
+│       └── analytics.js
+│
+└── templates/
+    ├── login.html
+    ├── index.html
+    ├── booking.html
+    ├── token.html
+    ├── doctor.html
+    └── analytics.html
+```
 ---
 
 <div align="center">
