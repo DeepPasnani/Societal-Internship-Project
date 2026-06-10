@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏥 ClinicFlow
+# 🏥 HealthBox
 
 ### Smart Clinic Management for Small Clinics & PHCs
 
