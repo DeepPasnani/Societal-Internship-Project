@@ -5,24 +5,24 @@
    ============================================================ */
 
 // ── CHART.JS GLOBAL DEFAULTS ──────────────────────────────────
-Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color       = '#64748b';
 Chart.defaults.borderColor = '#e2e8f0';
 
 // ── PALETTE ───────────────────────────────────────────────────
 const COLORS = {
-  primary:     '#1a6cf5',
-  primaryAlpha:'rgba(26,108,245,0.12)',
-  accent:      '#00b894',
-  accentAlpha: 'rgba(0,184,148,0.12)',
+  primary:     '#0d9488',
+  primaryAlpha:'rgba(13,148,136,0.12)',
+  accent:      '#10b981',
+  accentAlpha: 'rgba(16,185,129,0.12)',
   warning:     '#fdcb6e',
   danger:      '#e17055',
   purple:      '#6c5ce7',
   muted:       '#64748b',
 };
 
-const STATUS_COLORS = ['#00b894', '#e17055', '#1a6cf5', '#fdcb6e'];
-const DOC_COLORS    = ['#1a6cf5', '#00b894', '#6c5ce7', '#e17055'];
+const STATUS_COLORS = ['#10b981', '#ef4444', '#0d9488', '#f59e0b'];
+const DOC_COLORS    = ['#0d9488', '#10b981', '#6c5ce7', '#f59e0b'];
 
 // ── CHART INSTANCES ───────────────────────────────────────────
 let charts = {};
@@ -304,7 +304,7 @@ function createAreaChart(canvasId, labels, data) {
         label: 'Appointments',
         data,
         borderColor: COLORS.primary,
-        backgroundColor: 'rgba(26,108,245,0.15)',
+        backgroundColor: 'rgba(13,148,136,0.15)',
         borderWidth: 2.5,
         pointRadius: 3,
         pointBackgroundColor: COLORS.primary,

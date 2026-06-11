@@ -3,709 +3,525 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HealthBook — Find Doctors, Hospitals & Book Appointments</title>
-  <meta name="description" content="HealthBook connects patients with the best doctors and hospitals in Vadodara. Skip the queues with our smart token system." />
+  <title>HealthBook — Smart Healthcare Appointments for Vadodara Clinics</title>
   <link rel="stylesheet" href="/static/css/style.css" />
-  <link rel="stylesheet" href="/static/css/healthbook.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body class="hb-body">
+<body>
 
-<!-- ═══════════════════════════════════════
-     NAVBAR
-═══════════════════════════════════════ -->
-<nav class="hb-navbar">
-  <div class="hb-container hb-nav-inner">
-    <a href="/" class="hb-logo">
-      <div class="hb-logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
-      <span>HealthBook</span>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      HealthBook
     </a>
-    <ul class="hb-nav-links" id="hbNavLinks">
-      <li><a href="/doctor">Find Doctors</a></li>
-      <li><a href="/booking">Hospitals</a></li>
-      <li><a href="/booking">Lab Tests</a></li>
-      <li><a href="/token">Emergency</a></li>
-      <li><a href="/booking">Health Packages</a></li>
-    </ul>
-    <div class="hb-nav-right">
-      <button class="hb-lang-btn" id="navbar-lang-btn" onclick="hbToggleLang()" title="Switch to Gujarati / English">
-        <i class="fa-solid fa-globe"></i> <span id="global-lang-display">EN</span>
-      </button>
-      {% if user %}
-        <div class="hb-user-chip">
-          <i class="fa-solid fa-circle-user"></i>
-          <span>{{ user.name.split()[0] }}</span>
-          <a href="/auth/logout" class="hb-signout">Sign Out</a>
-        </div>
-      {% else %}
-        <a href="/login" class="hb-login-btn"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
-      {% endif %}
-    </div>
-    <button class="hb-hamburger" id="hbHamburger" aria-label="Menu">
+    <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════
-     HERO / SEARCH
-═══════════════════════════════════════ -->
-<section class="hb-hero">
-  <div class="hb-container">
-    <h1 class="hb-hero-title" data-i18n="findCareTitle">Find Care by Specialty</h1>
-    <div class="hb-specialty-grid">
-      <a href="/doctors?specialty=general" class="hb-specialty-card">
-        <span class="hb-sp-icon">🩺</span>
-        <span data-i18n="specGeneral">General Physicians</span>
-      </a>
-      <a href="/doctors?specialty=pediatric" class="hb-specialty-card">
-        <span class="hb-sp-icon">👶</span>
-        <span data-i18n="specPediatric">Pediatricians</span>
-      </a>
-      <a href="/doctors?specialty=dental" class="hb-specialty-card">
-        <span class="hb-sp-icon">🦷</span>
-        <span data-i18n="specDental">Dentists</span>
-      </a>
-      <a href="/doctors?specialty=ent" class="hb-specialty-card">
-        <span class="hb-sp-icon">👂</span>
-        <span data-i18n="specENT">ENT</span>
-      </a>
-      <a href="/doctors?specialty=gynecol" class="hb-specialty-card">
-        <span class="hb-sp-icon">👩‍⚕️</span>
-        <span data-i18n="specGynec">Gynecologists</span>
-      </a>
-      <a href="/doctors?specialty=cardio" class="hb-specialty-card">
-        <span class="hb-sp-icon">❤️</span>
-        <span data-i18n="specCardio">Cardiologists</span>
-      </a>
-      <a href="/doctors?specialty=derma" class="hb-specialty-card">
-        <span class="hb-sp-icon">🧴</span>
-        <span data-i18n="specDerma">Dermatologists</span>
-      </a>
-      <a href="/doctors?specialty=psychi" class="hb-specialty-card">
-        <span class="hb-sp-icon">🧠</span>
-        <span data-i18n="specPsych">Psychiatrists</span>
-      </a>
-      <a href="/doctors" class="hb-specialty-card hb-view-all">
-        <span class="hb-sp-icon">🔍</span>
-        <span>View All Specialties →</span>
-      </a>
+<!-- HERO -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-circle-check"></i>
+        GTU Societal Internship · BE05000011
+      </div>
+      <div class="hero-logo">
+        <div class="hero-logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <h1>Clinic<span>Flow</span></h1>
+      </div>
+      <p class="hero-tagline">Find Doctors · Book Appointments · Skip the Queue</p>
+      <p class="hero-sub">AI-powered wait time predictions for clinics in Vadodara, Gujarat</p>
+
+      <!-- Search bar -->
+      <div class="hero-search">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
+        <input type="text" placeholder="Search doctors, specialties, hospitals..." id="hero-search-input" />
+        <a href="/booking" class="btn btn-primary">
+          <i class="fa-solid fa-search"></i> Find Care
+        </a>
+      </div>
+
+      <div class="hero-cta">
+        <a href="/booking" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+        </a>
+        <a href="/token" class="btn btn-outline btn-lg" style="color:white;border-color:rgba(255,255,255,0.35);">
+          <i class="fa-solid fa-ticket"></i> Live Queue
+        </a>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     TOP HOSPITALS NEAR YOU
-═══════════════════════════════════════ -->
-<section class="hb-section">
-  <div class="hb-container">
-    <div class="hb-section-header">
+<!-- FIND CARE BY SPECIALTY -->
+<section class="specialty-section">
+  <div class="container">
+    <div class="section-header" style="text-align:center;">
+      <div class="section-label">Find Care by Specialty</div>
+      <h2>What are you looking for?</h2>
+    </div>
+    <div class="specialty-grid">
+      <div class="specialty-chip"><span class="sp-icon">🩺</span><span class="sp-label">General Physician</span></div>
+      <div class="specialty-chip"><span class="sp-icon">👶</span><span class="sp-label">Pediatrician</span></div>
+      <div class="specialty-chip"><span class="sp-icon">🦷</span><span class="sp-label">Dentist</span></div>
+      <div class="specialty-chip"><span class="sp-icon">👂</span><span class="sp-label">ENT</span></div>
+      <div class="specialty-chip"><span class="sp-icon">👩‍⚕️</span><span class="sp-label">Gynecologist</span></div>
+      <div class="specialty-chip"><span class="sp-icon">❤️</span><span class="sp-label">Cardiologist</span></div>
+      <div class="specialty-chip"><span class="sp-icon">🧴</span><span class="sp-label">Dermatologist</span></div>
+      <div class="specialty-chip"><span class="sp-icon">🧠</span><span class="sp-label">Psychiatrist</span></div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <a href="/booking" class="btn btn-outline">View All Specialties →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TOP HOSPITALS -->
+<section class="hospitals-section">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
       <div>
-        <h2 class="hb-section-title" data-i18n="topHospitals">Top Hospitals Near You</h2>
-        <p class="hb-section-sub" id="location-sub">Detecting your location...</p>
+        <div class="section-label">Top Hospitals Near You</div>
+        <h2>Trusted Clinics in Vadodara</h2>
+        <p style="color:var(--muted);font-size:0.875rem;">Auto-detected by your location</p>
       </div>
-      <a href="/doctors" class="hb-view-all-link">View All</a>
+      <a href="/booking" class="btn btn-outline btn-sm">View All →</a>
     </div>
-    <div class="hb-hospitals-grid">
-      <div class="hb-hospital-card">
-        <div class="hb-hospital-img" style="background: linear-gradient(135deg,#e3f0ff,#c7d9f5);">
-          <div class="hb-hospital-img-placeholder"><i class="fa-solid fa-hospital" style="font-size:2.5rem;color:#1a6cf5;opacity:.4;"></i></div>
-        </div>
-        <div class="hb-hospital-body">
-          <div class="hb-hospital-top">
-            <h3>Anukriti Hospital</h3>
-            <span class="hb-rating"><i class="fa-solid fa-star"></i> 4.8</span>
-          </div>
-          <p class="hb-hospital-loc"><i class="fa-solid fa-location-dot"></i> Tarsali, Vadodara</p>
-          <div class="hb-tags">
-            <span class="hb-tag">Cardiology</span>
-            <span class="hb-tag">Neurology</span>
-            <span class="hb-tag">Oncology</span>
-          </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
+    <div class="hospital-grid">
+      <div class="hospital-card">
+        <div class="hospital-img">🏥<div class="rating-chip">⭐ 4.8</div></div>
+        <div class="hospital-body">
+          <h3>Anukriti Hospital</h3>
+          <p class="location"><i class="fa-solid fa-location-dot"></i> Tarsali, Vadodara</p>
+          <div class="hospital-tags"><span class="htag">Cardiology</span><span class="htag">Neurology</span><span class="htag">Oncology</span></div>
+          <p class="hospital-fee">Consultation Fee: <strong>₹500</strong></p>
+          <p class="hospital-next"><i class="fa-solid fa-clock"></i> Next Available: 10:30 AM</p>
+          <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Appointment</a>
         </div>
       </div>
-      <div class="hb-hospital-card">
-        <div class="hb-hospital-img" style="background: linear-gradient(135deg,#e0faf3,#b2f0e0);">
-          <div class="hb-hospital-img-placeholder"><i class="fa-solid fa-hospital" style="font-size:2.5rem;color:#00b894;opacity:.4;"></i></div>
-        </div>
-        <div class="hb-hospital-body">
-          <div class="hb-hospital-top">
-            <h3>Shreeji Hospital</h3>
-            <span class="hb-rating"><i class="fa-solid fa-star"></i> 4.6</span>
-          </div>
-          <p class="hb-hospital-loc"><i class="fa-solid fa-location-dot"></i> Maneja, Vadodara</p>
-          <div class="hb-tags">
-            <span class="hb-tag">Orthopedics</span>
-            <span class="hb-tag">Pediatrics</span>
-          </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
+      <div class="hospital-card">
+        <div class="hospital-img">🏨<div class="rating-chip">⭐ 4.6</div></div>
+        <div class="hospital-body">
+          <h3>Shreeji Hospital</h3>
+          <p class="location"><i class="fa-solid fa-location-dot"></i> Maneja, Vadodara</p>
+          <div class="hospital-tags"><span class="htag">Orthopedics</span><span class="htag">Pediatrics</span></div>
+          <p class="hospital-fee">Consultation Fee: <strong>₹600</strong></p>
+          <p class="hospital-next"><i class="fa-solid fa-clock"></i> Next Available: 2:15 PM</p>
+          <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Appointment</a>
         </div>
       </div>
-      <div class="hb-hospital-card">
-        <div class="hb-hospital-img" style="background: linear-gradient(135deg,#fff3e0,#ffe0b2);">
-          <div class="hb-hospital-img-placeholder"><i class="fa-solid fa-hospital" style="font-size:2.5rem;color:#f0a500;opacity:.4;"></i></div>
-        </div>
-        <div class="hb-hospital-body">
-          <div class="hb-hospital-top">
-            <h3>Spandan Hospital</h3>
-            <span class="hb-rating"><i class="fa-solid fa-star"></i> 4.7</span>
-          </div>
-          <p class="hb-hospital-loc"><i class="fa-solid fa-location-dot"></i> Manjalpur, Vadodara</p>
-          <div class="hb-tags">
-            <span class="hb-tag">Emergency</span>
-            <span class="hb-tag">ICU</span>
-            <span class="hb-tag">Surgery</span>
-          </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
+      <div class="hospital-card">
+        <div class="hospital-img">🏦<div class="rating-chip">⭐ 4.7</div></div>
+        <div class="hospital-body">
+          <h3>Spandan Hospital</h3>
+          <p class="location"><i class="fa-solid fa-location-dot"></i> Manjalpur, Vadodara</p>
+          <div class="hospital-tags"><span class="htag">Emergency</span><span class="htag">ICU</span><span class="htag">Surgery</span></div>
+          <p class="hospital-fee">Consultation Fee: <strong>₹800</strong></p>
+          <p class="hospital-next"><i class="fa-solid fa-clock"></i> Next Available: Tomorrow 9:00 AM</p>
+          <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Appointment</a>
         </div>
       </div>
-      <div class="hb-hospital-card">
-        <div class="hb-hospital-img" style="background: linear-gradient(135deg,#f3e5f5,#e1bee7);">
-          <div class="hb-hospital-img-placeholder"><i class="fa-solid fa-hospital" style="font-size:2.5rem;color:#8e44ad;opacity:.4;"></i></div>
-        </div>
-        <div class="hb-hospital-body">
-          <div class="hb-hospital-top">
-            <h3>Vinayak Hospital</h3>
-            <span class="hb-rating"><i class="fa-solid fa-star"></i> 4.9</span>
-          </div>
-          <p class="hb-hospital-loc"><i class="fa-solid fa-location-dot"></i> Tarsali, Vadodara</p>
-          <div class="hb-tags">
-            <span class="hb-tag">Gastroenterology</span>
-            <span class="hb-tag">Nephrology</span>
-          </div>
-          <a href="/booking" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookAppointmentBtn">Book Appointment</a>
+      <div class="hospital-card">
+        <div class="hospital-img">🏫<div class="rating-chip">⭐ 4.9</div></div>
+        <div class="hospital-body">
+          <h3>Vinayak Hospital</h3>
+          <p class="location"><i class="fa-solid fa-location-dot"></i> Tarsali, Vadodara</p>
+          <div class="hospital-tags"><span class="htag">Gastroenterology</span><span class="htag">Nephrology</span></div>
+          <p class="hospital-fee">Consultation Fee: <strong>₹700</strong></p>
+          <p class="hospital-next"><i class="fa-solid fa-clock"></i> Next Available: 11:45 AM</p>
+          <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Appointment</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     TOP DOCTORS BY SPECIALTY
-═══════════════════════════════════════ -->
-<section class="hb-section hb-section-alt">
-  <div class="hb-container">
-    <div class="hb-section-header">
+<!-- TOP DOCTORS (loaded from API) -->
+<section class="doctors-section">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
       <div>
-        <h2 class="hb-section-title" data-i18n="topDoctors">Top Doctors by Specialty</h2>
-        <p class="hb-section-sub" data-i18n="topDoctorsSub">Experienced doctors with live availability status</p>
+        <div class="section-label">Our Doctors</div>
+        <h2>Experienced doctors with live availability</h2>
       </div>
-      <a href="/doctor" class="hb-view-all-link">data-i18n="viewAllDoctors">View All Doctors</a>
+      <a href="/booking" class="btn btn-outline btn-sm">Book Appointment →</a>
     </div>
-    <div class="hb-doctors-grid">
-      <div class="hb-doctor-card">
-        <div class="hb-doc-avatar hb-doc-blue">
-          <i class="fa-solid fa-user-doctor"></i>
-          <span class="hb-exp-badge">15+ years experience</span>
-        </div>
-        <div class="hb-doc-body">
-          <h3>Dr. Priya Sharma</h3>
-          <p class="hb-doc-qual">MBBS, MD, DM</p>
-          <p class="hb-doc-spec">Cardiologist</p>
-          <div class="hb-doc-meta">
-            <span><i class="fa-solid fa-star hb-star"></i> 4.9 <span class="hb-doc-reviews">(1247)</span></span>
-            <span>Apollo Hospital</span>
-          </div>
-          <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Marathi</p>
-          <div class="hb-doc-footer">
-            <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
-              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="hb-doctor-card">
-        <div class="hb-doc-avatar hb-doc-green">
-          <i class="fa-solid fa-user-doctor"></i>
-          <span class="hb-exp-badge">12+ years experience</span>
-        </div>
-        <div class="hb-doc-body">
-          <h3>Dr. Rajesh Patel</h3>
-          <p class="hb-doc-qual">MBBS, MD</p>
-          <p class="hb-doc-spec" data-i18n="specPediatric">Pediatrician</p>
-          <div class="hb-doc-meta">
-            <span><i class="fa-solid fa-star hb-star"></i> 4.7 <span class="hb-doc-reviews">(892)</span></span>
-            <span>Fortis Healthcare</span>
-          </div>
-          <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Gujarati</p>
-          <div class="hb-doc-footer">
-            <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
-              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="hb-doctor-card">
-        <div class="hb-doc-avatar hb-doc-orange">
-          <i class="fa-solid fa-user-doctor"></i>
-          <span class="hb-exp-badge">10+ years experience</span>
-        </div>
-        <div class="hb-doc-body">
-          <h3>Dr. Anjali Reddy</h3>
-          <p class="hb-doc-qual">MBBS, MD</p>
-          <p class="hb-doc-spec" data-i18n="specDerma">Dermatologist</p>
-          <div class="hb-doc-meta">
-            <span><i class="fa-solid fa-star hb-star"></i> 4.8 <span class="hb-doc-reviews">(634)</span></span>
-            <span>Lilavati Hospital</span>
-          </div>
-          <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi, Telugu</p>
-          <div class="hb-doc-footer">
-            <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
-              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="hb-doctor-card">
-        <div class="hb-doc-avatar hb-doc-purple">
-          <i class="fa-solid fa-user-doctor"></i>
-          <span class="hb-exp-badge">18+ years experience</span>
-        </div>
-        <div class="hb-doc-body">
-          <h3>Dr. Vikram Singh</h3>
-          <p class="hb-doc-qual">MBBS, MS</p>
-          <p class="hb-doc-spec" data-i18n="specOrtho">Orthopedic Surgeon</p>
-          <div class="hb-doc-meta">
-            <span><i class="fa-solid fa-star hb-star"></i> 4.6 <span class="hb-doc-reviews">(1056)</span></span>
-            <span>Hinduja Hospital</span>
-          </div>
-          <p class="hb-doc-langs"><i class="fa-solid fa-language"></i> English, Hindi</p>
-          <div class="hb-doc-footer">
-            <div class="hb-doc-actions">
-              <a href="/booking" class="hb-btn hb-btn-primary hb-btn-sm" data-i18n="bookNow">Book Now</a>
-              <a href="/doctors" class="hb-btn hb-btn-outline hb-btn-sm" data-i18n="viewProfile">View Profile</a>
-            </div>
-          </div>
-        </div>
+    <div class="doctor-listing-grid" id="doctor-listing">
+      <!-- Populated by JS -->
+      <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted);">
+        <i class="fa-solid fa-spinner fa-spin"></i> Loading doctors...
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     HEALTH PACKAGES & OFFERS
-═══════════════════════════════════════ -->
-<section class="hb-section">
-  <div class="hb-container">
-    <div class="hb-section-header">
+<!-- PROMO BANNERS -->
+<section class="promo-section">
+  <div class="container">
+    <div class="promo-row">
+      <div class="promo-card teal">
+        <span class="promo-icon">🎁</span>
+        <div class="promo-text">
+          <strong>First Consultation Free</strong>
+          <span>For new users · Code: FIRST100</span>
+        </div>
+        <span class="promo-code">FIRST100</span>
+      </div>
+      <div class="promo-card blue">
+        <span class="promo-icon">🔬</span>
+        <div class="promo-text">
+          <strong>20% Off Lab Tests</strong>
+          <span>Valid till month end · Code: LAB20</span>
+        </div>
+        <span class="promo-code">LAB20</span>
+      </div>
+      <div class="promo-card red">
+        <span class="promo-icon">🚑</span>
+        <div class="promo-text">
+          <strong>Emergency 24/7</strong>
+          <span>No extra charges · Code: EMERGENCY</span>
+        </div>
+        <span class="promo-code">EMERGENCY</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HEALTH PACKAGES -->
+<section class="packages-section">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
       <div>
-        <h2 class="hb-section-title" data-i18n="healthPackages">Health Packages &amp; Special Offers</h2>
-        <p class="hb-section-sub" data-i18n="healthPackagesSub">Comprehensive health checkups and exclusive offers designed for your wellness journey</p>
+        <div class="section-label">Health Packages & Special Offers</div>
+        <h2>Comprehensive health checkups</h2>
+        <p style="color:var(--muted);font-size:0.875rem;">Exclusive offers designed for your wellness journey</p>
       </div>
     </div>
-    <!-- Offer Banners -->
-    <div class="hb-offers-row">
-      <div class="hb-offer-banner hb-offer-green">
-        <div class="hb-offer-icon"><i class="fa-solid fa-stethoscope"></i></div>
-        <div>
-          <p class="hb-offer-title">First Consultation Free</p>
-          <p class="hb-offer-sub">For new users</p>
+    <div class="packages-grid">
+      <div class="package-card featured">
+        <span class="pkg-badge">Most Popular</span>
+        <span class="pkg-icon">🩸</span>
+        <div class="pkg-name">Diabetes Screening</div>
+        <div class="pkg-price">
+          <span class="price-new">₹499</span>
+          <span class="price-old">₹899</span>
+          <span class="discount">44% OFF</span>
         </div>
-        <span class="hb-offer-code">Code: FIRST100</span>
+        <div class="pkg-meta">
+          <span>⏱ Reports in 6 hours</span>
+          <span>📋 500+ bookings · ⭐ 4.8</span>
+        </div>
+        <div class="pkg-tests">
+          <div class="pkg-tests-label">Tests Included</div>
+          <div class="pkg-test-tags"><span class="ptag">HbA1c</span><span class="ptag">Fasting Glucose</span><span class="ptag">Random Glucose</span></div>
+        </div>
+        <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Package</a>
       </div>
-      <div class="hb-offer-banner hb-offer-blue">
-        <div class="hb-offer-icon"><i class="fa-solid fa-flask"></i></div>
-        <div>
-          <p class="hb-offer-title">20% Off Lab Tests</p>
-          <p class="hb-offer-sub">Valid till month end</p>
+      <div class="package-card">
+        <span class="pkg-icon">❤️</span>
+        <div class="pkg-name">Heart Health Checkup</div>
+        <div class="pkg-price">
+          <span class="price-new">₹999</span>
+          <span class="price-old">₹1,599</span>
+          <span class="discount">38% OFF</span>
         </div>
-        <span class="hb-offer-code">Code: LAB20</span>
+        <div class="pkg-meta">
+          <span>⏱ Reports in 24 hours</span>
+          <span>📋 300+ bookings · ⭐ 4.9</span>
+        </div>
+        <div class="pkg-tests">
+          <div class="pkg-tests-label">Tests Included</div>
+          <div class="pkg-test-tags"><span class="ptag">ECG</span><span class="ptag">Echo</span><span class="ptag">Lipid Profile</span></div>
+        </div>
+        <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Package</a>
       </div>
-      <div class="hb-offer-banner hb-offer-red">
-        <div class="hb-offer-icon"><i class="fa-solid fa-truck-medical"></i></div>
-        <div>
-          <p class="hb-offer-title">Emergency 24/7</p>
-          <p class="hb-offer-sub">No extra charges</p>
+      <div class="package-card featured">
+        <span class="pkg-badge">Most Popular</span>
+        <span class="pkg-icon">🏥</span>
+        <div class="pkg-name">Full Body Checkup</div>
+        <div class="pkg-price">
+          <span class="price-new">₹1,799</span>
+          <span class="price-old">₹2,999</span>
+          <span class="discount">40% OFF</span>
         </div>
-        <span class="hb-offer-code">Code: EMERGENCY</span>
+        <div class="pkg-meta">
+          <span>⏱ Reports in 24 hours</span>
+          <span>📋 1,000+ bookings · ⭐ 4.7</span>
+        </div>
+        <div class="pkg-tests">
+          <div class="pkg-tests-label">Tests Included</div>
+          <div class="pkg-test-tags"><span class="ptag">CBC</span><span class="ptag">LFT</span><span class="ptag">KFT</span><span class="ptag">+3 more</span></div>
+        </div>
+        <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Package</a>
       </div>
-    </div>
-    <!-- Package Cards -->
-    <div class="hb-packages-grid">
-      <div class="hb-package-card">
-        <div class="hb-pkg-icon">🩸</div>
-        <div class="hb-pkg-top">
-          <h3>Diabetes Screening</h3>
-          <span class="hb-popular-badge">Most Popular</span>
+      <div class="package-card">
+        <span class="pkg-icon">👩‍⚕️</span>
+        <div class="pkg-name">Women's Health Package</div>
+        <div class="pkg-price">
+          <span class="price-new">₹1,499</span>
+          <span class="price-old">₹2,499</span>
+          <span class="discount">40% OFF</span>
         </div>
-        <div class="hb-pkg-price">
-          <span class="hb-price-new">₹499</span>
-          <span class="hb-price-old">₹899</span>
-          <span class="hb-discount-badge">44% OFF</span>
+        <div class="pkg-meta">
+          <span>⏱ Reports in 48 hours</span>
+          <span>📋 250+ bookings · ⭐ 4.8</span>
         </div>
-        <ul class="hb-pkg-info">
-          <li><i class="fa-regular fa-clock"></i> Reports in 6 hours</li>
-          <li><i class="fa-solid fa-users"></i> 500+ bookings</li>
-          <li><i class="fa-solid fa-star"></i> 4.8 rating</li>
-        </ul>
-        <div class="hb-pkg-tests">
-          <p class="hb-tests-label">Tests Included:</p>
-          <div class="hb-test-tags">
-            <span>HbA1c</span><span>Fasting Glucose</span><span>Random Glucose</span><span>+1 more</span>
-          </div>
+        <div class="pkg-tests">
+          <div class="pkg-tests-label">Tests Included</div>
+          <div class="pkg-test-tags"><span class="ptag">Pap Smear</span><span class="ptag">Mammography</span><span class="ptag">Bone Density</span></div>
         </div>
-        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
+        <a href="/booking" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;">Book Package</a>
       </div>
-      <div class="hb-package-card">
-        <div class="hb-pkg-icon">❤️</div>
-        <div class="hb-pkg-top">
-          <h3>Heart Health Checkup</h3>
-        </div>
-        <div class="hb-pkg-price">
-          <span class="hb-price-new">₹999</span>
-          <span class="hb-price-old">₹1599</span>
-          <span class="hb-discount-badge">38% OFF</span>
-        </div>
-        <ul class="hb-pkg-info">
-          <li><i class="fa-regular fa-clock"></i> Reports in 24 hours</li>
-          <li><i class="fa-solid fa-users"></i> 300+ bookings</li>
-          <li><i class="fa-solid fa-star"></i> 4.9 rating</li>
-        </ul>
-        <div class="hb-pkg-tests">
-          <p class="hb-tests-label">Tests Included:</p>
-          <div class="hb-test-tags">
-            <span>ECG</span><span>Echo</span><span>Lipid Profile</span><span>+1 more</span>
-          </div>
-        </div>
-        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
-      </div>
-      <div class="hb-package-card hb-pkg-featured">
-        <div class="hb-pkg-icon">🏥</div>
-        <div class="hb-pkg-top">
-          <h3>Full Body Checkup</h3>
-          <span class="hb-popular-badge">Most Popular</span>
-        </div>
-        <div class="hb-pkg-price">
-          <span class="hb-price-new">₹1799</span>
-          <span class="hb-price-old">₹2999</span>
-          <span class="hb-discount-badge">40% OFF</span>
-        </div>
-        <ul class="hb-pkg-info">
-          <li><i class="fa-regular fa-clock"></i> Reports in 24 hours</li>
-          <li><i class="fa-solid fa-users"></i> 1000+ bookings</li>
-          <li><i class="fa-solid fa-star"></i> 4.7 rating</li>
-        </ul>
-        <div class="hb-pkg-tests">
-          <p class="hb-tests-label">Tests Included:</p>
-          <div class="hb-test-tags">
-            <span>CBC</span><span>LFT</span><span>KFT</span><span>+3 more</span>
-          </div>
-        </div>
-        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
-      </div>
-      <div class="hb-package-card">
-        <div class="hb-pkg-icon">👩‍⚕️</div>
-        <div class="hb-pkg-top">
-          <h3>Women's Health Package</h3>
-        </div>
-        <div class="hb-pkg-price">
-          <span class="hb-price-new">₹1499</span>
-          <span class="hb-price-old">₹2499</span>
-          <span class="hb-discount-badge">40% OFF</span>
-        </div>
-        <ul class="hb-pkg-info">
-          <li><i class="fa-regular fa-clock"></i> Reports in 48 hours</li>
-          <li><i class="fa-solid fa-users"></i> 250+ bookings</li>
-          <li><i class="fa-solid fa-star"></i> 4.8 rating</li>
-        </ul>
-        <div class="hb-pkg-tests">
-          <p class="hb-tests-label">Tests Included:</p>
-          <div class="hb-test-tags">
-            <span>Pap Smear</span><span>Mammography</span><span>Bone Density</span><span>+1 more</span>
-          </div>
-        </div>
-        <a href="/packages" class="hb-btn hb-btn-primary hb-btn-block" data-i18n="bookPackage">Book Package</a>
-      </div>
-    </div>
-    <div style="text-align:center;margin-top:32px;">
-      <a href="/packages" class="hb-btn hb-btn-outline" data-i18n="viewAllPackages">View All Health Packages</a>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     HOW IT WORKS
-═══════════════════════════════════════ -->
-<section class="hb-section hb-section-alt">
-  <div class="hb-container">
-    <h2 class="hb-section-title hb-center" data-i18n="howItWorks">How It Works</h2>
-    <p class="hb-section-sub hb-center" data-i18n="howItWorksSub" style="margin-bottom:48px;">Book your appointments in just 4 simple steps. Our smart token system ensures you never have to wait in long queues.</p>
-    <div class="hb-steps-grid">
-      <div class="hb-step">
-        <div class="hb-step-num">1</div>
-        <div class="hb-step-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+<!-- HOW IT WORKS -->
+<section class="howitworks-section">
+  <div class="container">
+    <div class="section-header" style="text-align:center;">
+      <div class="section-label">How It Works</div>
+      <h2>Book in just 4 simple steps</h2>
+      <p>Our smart token system ensures you never have to wait in long queues</p>
+    </div>
+
+    <!-- Smart Token Banner -->
+    <div class="token-banner">
+      <div class="token-banner-text">
+        <h3><i class="fa-solid fa-ticket" style="color:var(--primary-mid);"></i> &nbsp;Smart Token System</h3>
+        <p>Skip the waiting room with our intelligent queue management</p>
+      </div>
+      <div class="token-banner-feats">
+        <div class="tbf"><i class="fa-solid fa-mobile-screen"></i> Live token status</div>
+        <div class="tbf"><i class="fa-solid fa-bell"></i> Real-time alerts</div>
+        <div class="tbf"><i class="fa-solid fa-ban"></i> No more queues</div>
+      </div>
+      <a href="/token" class="btn btn-primary">View Live Queue</a>
+    </div>
+
+    <div class="hiw-grid">
+      <div class="hiw-step">
+        <div class="hiw-num">1</div>
         <h3>Search</h3>
-        <p>Find doctors, hospitals, or specialties near your location</p>
+        <p>Find doctors, hospitals, or specialties near your location in Vadodara</p>
       </div>
-      <div class="hb-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="hb-step">
-        <div class="hb-step-num">2</div>
-        <div class="hb-step-icon"><i class="fa-solid fa-calendar-days"></i></div>
+      <div class="hiw-step">
+        <div class="hiw-num">2</div>
         <h3>Choose Time</h3>
-        <p>Select available time slots and get your token number</p>
+        <p>Select available time slots and get your AI-predicted token number instantly</p>
       </div>
-      <div class="hb-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
-      <div class="hb-step">
-        <div class="hb-step-num">3</div>
-        <div class="hb-step-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="hiw-step">
+        <div class="hiw-num">3</div>
         <h3>Confirm Booking</h3>
-        <p>Complete payment and receive booking confirmation via OTP</p>
+        <p>Complete booking and receive confirmation with your estimated wait time</p>
       </div>
-    </div>
-
-    <!-- Smart Token System highlight -->
-    <div class="hb-token-highlight">
-      <div class="hb-token-features">
-        <div class="hb-token-feat">
-          <i class="fa-solid fa-wifi"></i>
-          <div>
-            <h4>Real Time Updates</h4>
-            <p>Live token status and queue position</p>
-          </div>
-        </div>
-        <div class="hb-token-feat">
-          <i class="fa-solid fa-bell"></i>
-          <div>
-            <h4>Smart Alerts</h4>
-            <p>50 mins before + Your token is now notifications</p>
-          </div>
-        </div>
-        <div class="hb-token-feat">
-          <i class="fa-solid fa-users-slash"></i>
-          <div>
-            <h4>No More Queues</h4>
-            <p>Skip the waiting room with our token system</p>
-          </div>
-        </div>
-      </div>
-      <div class="hb-token-cta">
-        <div class="hb-token-badge-display">
-          <i class="fa-solid fa-ticket"></i>
-          <span>🎯 Smart Token System</span>
-        </div>
-        <a href="/token" class="hb-btn hb-btn-primary">data-i18n="viewLiveQueue">View Live Queue</span> <i class="fa-solid fa-arrow-right"></i></a>
+      <div class="hiw-step">
+        <div class="hiw-num">4</div>
+        <h3>Track Your Turn</h3>
+        <p>Monitor your position in real-time on the live queue display — no surprises</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     TRUST / STATS BAR
-═══════════════════════════════════════ -->
-<section class="hb-trust-bar">
-  <div class="hb-container">
-    <h2 class="hb-section-title hb-center" data-i18n="trustedBy" style="color:white;margin-bottom:8px;">Trusted by Thousands</h2>
-    <p class="hb-center" data-i18n="trustedBySub" style="color:rgba(255,255,255,.6);margin-bottom:40px;">Join millions of patients who trust HealthBook for their healthcare needs</p>
-    <div class="hb-trust-stats">
-      <div class="hb-trust-stat">
-        <span class="hb-trust-icon">🏆</span>
-        <span class="hb-trust-num" id="stat-total">0</span>
-        <span class="hb-trust-label">Happy Patients</span>
+<!-- STATS -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-icon-wrap">🏆</div>
+        <div class="stat-number"><span id="stat-total" class="data-font">0</span></div>
+        <div class="stat-label">Appointments Today</div>
       </div>
-      <div class="hb-trust-stat">
-        <span class="hb-trust-icon">👨‍⚕️</span>
-        <span class="hb-trust-num">2,500+</span>
-        <span class="hb-trust-label">Verified Doctors</span>
+      <div class="stat-item">
+        <div class="stat-icon-wrap">👨‍⚕️</div>
+        <div class="stat-number">4</div>
+        <div class="stat-label">Verified Doctors</div>
       </div>
-      <div class="hb-trust-stat">
-        <span class="hb-trust-icon">🏥</span>
-        <span class="hb-trust-num">500+</span>
-        <span class="hb-trust-label">Partner Hospitals</span>
+      <div class="stat-item">
+        <div class="stat-icon-wrap">⏱️</div>
+        <div class="stat-number"><span id="stat-avg-wait" class="data-font">0</span><span style="font-size:1rem;color:rgba(255,255,255,0.4);"> min</span></div>
+        <div class="stat-label">Avg Wait Time Today</div>
       </div>
-      <div class="hb-trust-stat">
-        <span class="hb-trust-icon">🌟</span>
-        <span class="hb-trust-num">4.8/5</span>
-        <span class="hb-trust-label">Average Rating</span>
+      <div class="stat-item">
+        <div class="stat-icon-wrap">🌟</div>
+        <div class="stat-number">4.8<span style="font-size:1rem;color:rgba(255,255,255,0.4);">/5</span></div>
+        <div class="stat-label">Average Rating</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     TESTIMONIALS
-═══════════════════════════════════════ -->
-<section class="hb-section">
-  <div class="hb-container">
-    <h2 class="hb-section-title hb-center" style="margin-bottom:40px;">What Our Users Say</h2>
-    <div class="hb-testimonials-grid">
-      <div class="hb-testimonial">
-        <div class="hb-testi-stars">★★★★★</div>
-        <p>"Amazing experience! The token system saved me hours of waiting. Got real-time updates and the doctor was excellent."</p>
-        <div class="hb-testi-author">
-          <div class="hb-testi-avatar">PM</div>
-          <div>
-            <strong>Priya Menon</strong>
-            <span>Mumbai, Maharashtra</span>
-            <em>Cardiology Consultation</em>
-          </div>
+<!-- TESTIMONIALS -->
+<section class="reviews-section">
+  <div class="container">
+    <div class="section-header" style="text-align:center;">
+      <div class="section-label">What Our Users Say</div>
+      <h2>Trusted by thousands of patients</h2>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Amazing experience! The token system saved me hours of waiting. Got real-time updates and the doctor was excellent."</p>
+        <span class="review-chip">Cardiology Consultation</span>
+        <div class="reviewer">
+          <div class="reviewer-avatar">P</div>
+          <div><div class="reviewer-name">Priya Menon</div><div class="reviewer-loc">Vadodara, Gujarat</div></div>
         </div>
       </div>
-      <div class="hb-testimonial">
-        <div class="hb-testi-stars">★★★★★</div>
-        <p>"Very convenient platform. Booked appointment for my daughter's vaccination. The alerts kept me informed throughout."</p>
-        <div class="hb-testi-author">
-          <div class="hb-testi-avatar">RK</div>
-          <div>
-            <strong>Rajesh Kumar</strong>
-            <span>Pune, Maharashtra</span>
-            <em>Pediatric Vaccination</em>
-          </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Very convenient platform. Booked appointment for my daughter's vaccination. The alerts kept me informed throughout."</p>
+        <span class="review-chip">Pediatric Visit</span>
+        <div class="reviewer">
+          <div class="reviewer-avatar">R</div>
+          <div><div class="reviewer-name">Rajesh Kumar</div><div class="reviewer-loc">Maneja, Vadodara</div></div>
         </div>
       </div>
-      <div class="hb-testimonial">
-        <div class="hb-testi-stars">★★★★★</div>
-        <p>"Great service! Found a dermatologist nearby instantly. The location-based search is very accurate."</p>
-        <div class="hb-testi-author">
-          <div class="hb-testi-avatar">AS</div>
-          <div>
-            <strong>Anita Sharma</strong>
-            <span>Delhi, NCR</span>
-            <em>Dermatology Check-up</em>
-          </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Great service! Found a dermatologist nearby instantly. The location-based search is very accurate and fast."</p>
+        <span class="review-chip">Dermatology Check-up</span>
+        <div class="reviewer">
+          <div class="reviewer-avatar">A</div>
+          <div><div class="reviewer-name">Anita Sharma</div><div class="reviewer-loc">Tarsali, Vadodara</div></div>
         </div>
       </div>
-      <div class="hb-testimonial">
-        <div class="hb-testi-stars">★★★★★</div>
-        <p>"The commission system is transparent and fair. As a doctor, I love how easy it is to manage my appointments."</p>
-        <div class="hb-testi-author">
-          <div class="hb-testi-avatar">VP</div>
-          <div>
-            <strong>Vikram Patel</strong>
-            <span>Bangalore, Karnataka</span>
-            <em>Doctor's Perspective</em>
-          </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★☆</div>
+        <p class="review-text">"The AI wait-time prediction is surprisingly accurate. As a doctor, I love how easy it is to manage my appointments."</p>
+        <span class="review-chip">Doctor's Perspective</span>
+        <div class="reviewer">
+          <div class="reviewer-avatar">V</div>
+          <div><div class="reviewer-name">Dr. Vikram Patel</div><div class="reviewer-loc">Manjalpur, Vadodara</div></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     APP DOWNLOAD CTA
-═══════════════════════════════════════ -->
-<section class="hb-app-section">
-  <div class="hb-container hb-app-inner">
-    <div class="hb-app-content">
-      <h2>Download Our App</h2>
-      <p class="hb-app-sub">Get HealthBook App for Better Experience</p>
-      <p>Book appointments, manage your health records, and get real-time updates directly on your mobile device.</p>
-      <div class="hb-app-features">
-        <div class="hb-app-feat"><i class="fa-solid fa-rotate"></i> Real-time Updates</div>
-        <div class="hb-app-feat"><i class="fa-solid fa-bell"></i> Smart Notifications</div>
-        <div class="hb-app-feat"><i class="fa-solid fa-lock"></i> Secure Payments</div>
-        <div class="hb-app-feat"><i class="fa-solid fa-star"></i> Doctor Reviews</div>
+<!-- APP DOWNLOAD -->
+<section class="app-section">
+  <div class="container">
+    <div class="app-card">
+      <div class="app-text">
+        <h2>Get HealthBook App for Better Experience</h2>
+        <p>Book appointments, manage your health records, and get real-time token updates directly on your mobile device.</p>
+        <div class="app-feats">
+          <div class="app-feat"><i class="fa-solid fa-rotate"></i><div><strong>Real-time Updates</strong><span>Live appointment status</span></div></div>
+          <div class="app-feat"><i class="fa-solid fa-bell"></i><div><strong>Smart Notifications</strong><span>Get alerts before your turn</span></div></div>
+          <div class="app-feat"><i class="fa-solid fa-lock"></i><div><strong>Secure Payments</strong><span>Multiple payment options</span></div></div>
+          <div class="app-feat"><i class="fa-solid fa-star"></i><div><strong>Doctor Reviews</strong><span>Read verified patient reviews</span></div></div>
+        </div>
+        <div class="app-btns">
+          <a href="#" class="app-btn">
+            <i class="fa-brands fa-apple"></i>
+            <div class="abt"><small>Download on the</small><strong>App Store</strong></div>
+          </a>
+          <a href="#" class="app-btn">
+            <i class="fa-brands fa-google-play"></i>
+            <div class="abt"><small>Get it on</small><strong>Google Play</strong></div>
+          </a>
+        </div>
       </div>
-        <div class="hb-app-badges">
-        <a href="https://play.google.com/store" target="_blank" rel="noopener" class="hb-store-btn"><i class="fa-brands fa-google-play"></i> Google Play</a>
-        <a href="https://apps.apple.com" target="_blank" rel="noopener" class="hb-store-btn"><i class="fa-brands fa-apple"></i> App Store</a>
-      </div>
-      <div class="hb-app-rating-row">
-        <span class="hb-app-rating">4.8★ App Store Rating</span>
-        <span class="hb-app-support">24/7 Support</span>
-      </div>
-    </div>
-    <div class="hb-app-mockup">
-      <div class="hb-phone-mockup">
-        <div class="hb-phone-screen">
-          <div class="hb-phone-notif">
-            <i class="fa-solid fa-bell" style="color:#1a6cf5;"></i>
-            <div>
-              <p style="font-size:0.7rem;font-weight:700;">HEALTHBOOK</p>
-              <p style="font-size:0.65rem;color:#555;">Your appointment is ready</p>
-              <p style="font-size:0.65rem;color:#555;">Dr. Sharma Token 15</p>
-            </div>
-            <span style="font-size:0.6rem;color:#999;">Online</span>
+      <div class="app-visual">
+        <div class="app-phone-mockup">
+          <div class="apm-header">
+            <strong>HealthBook</strong>
+            <small>Your health companion</small>
           </div>
-          <div style="padding:12px;background:#f7f9fc;border-radius:8px;margin-top:8px;display:flex;align-items:center;gap:8px;">
-            <i class="fa-solid fa-qrcode" style="font-size:1.5rem;color:#1a6cf5;"></i>
-            <div>
-              <p style="font-size:0.65rem;font-weight:700;">QR Code</p>
-              <p style="font-size:0.6rem;color:#888;">Quick download</p>
-            </div>
+          <div class="apm-token">
+            <div class="t-label">Your Token</div>
+            <div class="t-num" id="app-mockup-token">—</div>
           </div>
+          <div class="apm-meta">
+            <span id="stat-waiting-app">— patients waiting</span><br/>
+            <span style="color:var(--primary);font-weight:600;font-size:0.72rem;">● Live</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <span style="font-size:0.72rem;color:rgba(255,255,255,0.35);">⭐ 4.8 App Store Rating &nbsp;·&nbsp; 24/7 Support</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════
-     FOOTER
-═══════════════════════════════════════ -->
-<footer class="hb-footer">
-  <div class="hb-container">
-    <div class="hb-footer-top">
-      <div class="hb-footer-brand">
-        <div class="hb-logo" style="margin-bottom:12px;">
-          <div class="hb-logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
-          <span style="color:white;font-weight:800;font-size:1.2rem;">HealthBook</span>
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+          HealthBook
         </div>
-        <p class="hb-footer-desc">India's leading healthcare appointment platform connecting patients with the best doctors and hospitals. Skip the queues with our smart token system.</p>
-        <p class="hb-footer-contact">Emergency: 108 | Support: +91 1800-XXX-XXXX</p>
-        <p class="hb-footer-contact">support@healthbook.in | Vadodara</p>
+        <p>India's smart healthcare appointment platform connecting patients with the best doctors and clinics in Vadodara. Skip the queues with our intelligent token system.</p>
+        <div class="footer-contact">
+          <span><strong>Emergency:</strong> 108</span>
+          <span><strong>Support:</strong> +91 1800-XXX-XXXX</span>
+          <span>support@healthbook.in · Vadodara, Gujarat</span>
+        </div>
       </div>
-      <div class="hb-footer-col">
+      <div class="footer-col">
         <h4>For Patients</h4>
         <ul>
-          <li><a href="/doctors">Find Doctors</a></li>
-          <li><a href="/doctors">Find Hospitals</a></li>
-          <li><a href="/packages">Book Lab Tests</a></li>
-          <li><a href="/token">Emergency Services</a></li>
-          <li><a href="/packages">Health Packages</a></li>
-          <li><a href="/doctors">Patient Reviews</a></li>
+          <li><a href="/booking">Find Doctors</a></li>
+          <li><a href="/booking">Book Appointment</a></li>
+          <li><a href="/token">Live Queue</a></li>
+          <li><a href="/analytics">Health Analytics</a></li>
         </ul>
       </div>
-      <div class="hb-footer-col">
+      <div class="footer-col">
         <h4>For Healthcare</h4>
         <ul>
-          <li><a href="/doctor">Join as Doctor</a></li>
-          <li><a href="/doctor">Partner Hospital</a></li>
-          <li><a href="/doctor">Commission Plans</a></li>
           <li><a href="/doctor">Doctor Dashboard</a></li>
-          <li><a href="/doctor">Practice Management</a></li>
-          <li><a href="/token">Token System</a></li>
+          <li><a href="/analytics">Analytics</a></li>
+          <li><a href="/doctor">Token System</a></li>
         </ul>
       </div>
-      <div class="hb-footer-col">
+      <div class="footer-col">
         <h4>Company</h4>
         <ul>
           <li><a href="#">About Us</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Press</a></li>
           <li><a href="#">Contact</a></li>
-        </ul>
-        <h4 style="margin-top:20px;">Legal</h4>
-        <ul>
-          <li><a href="#">Terms of Service</a></li>
           <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Cookie Policy</a></li>
-          <li><a href="#">Refund Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
         </ul>
-      </div>
-      <div class="hb-footer-col hb-footer-newsletter">
-        <h4>Stay Updated</h4>
-        <p>Get health tips, appointment reminders, and exclusive offers directly in your inbox.</p>
-        <div class="hb-newsletter">
-          <input type="email" placeholder="Enter your email" />
-          <button class="hb-btn hb-btn-primary">Subscribe</button>
-        </div>
-        <div class="hb-social-links">
-          <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="#"><i class="fa-brands fa-twitter"></i></a>
-          <a href="#"><i class="fa-brands fa-instagram"></i></a>
-          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-        </div>
       </div>
     </div>
-    <div class="hb-footer-bottom">
-      <span>Made with ❤️ in India</span>
-      <span>📱 Mobile Optimized</span>
-      <span>⚡ 24/7 Support</span>
-      <span>GTU Societal Internship BE05000011</span>
+    <div class="footer-bottom">
+      <span>Made with ❤️ in India &nbsp;·&nbsp; GTU Societal Internship BE05000011 &nbsp;·&nbsp; © 2025 HealthBook</span>
+      <div class="footer-badges">
+        <div class="footer-badge"><i class="fa-solid fa-mobile-screen"></i> Mobile Optimized</div>
+        <div class="footer-badge"><i class="fa-solid fa-bolt"></i> 24/7 Support</div>
+        <div class="footer-badge"><i class="fa-solid fa-shield-halved"></i> Secure</div>
+      </div>
     </div>
   </div>
 </footer>
@@ -713,21 +529,18 @@
 <div id="toast-container"></div>
 
 <script>
-  // Hamburger
-  document.getElementById('hbHamburger').addEventListener('click', () => {
-    document.getElementById('hbNavLinks').classList.toggle('hb-open');
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
   });
 
-  // Count-up for live patient stats
-  function countUp(el, target, suffix='', duration=1600) {
+  function countUp(el, target, duration = 1600) {
     if (!el) return;
     const start = performance.now();
     const step = (now) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      const val = Math.round(eased * target);
-      el.textContent = val.toLocaleString() + suffix;
+      el.textContent = Math.round(eased * target);
       if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -736,38 +549,61 @@
   fetch('/api/today-stats')
     .then(r => r.json())
     .then(data => {
-      countUp(document.getElementById('stat-total'), (data.total_today || 0) + 50000, '+');
+      countUp(document.getElementById('stat-total'), data.total_today || 0);
+      countUp(document.getElementById('stat-avg-wait'), Math.round(data.avg_wait_today || 0));
+      const w = data.currently_waiting || 0;
+      const mockupEl = document.getElementById('app-mockup-token');
+      const waitingEl = document.getElementById('stat-waiting-app');
+      if (mockupEl) mockupEl.textContent = data.total_today ? (data.total_today + 1) : '—';
+      if (waitingEl) waitingEl.textContent = `${w} patient${w !== 1 ? 's' : ''} waiting`;
+    })
+    .catch(() => {});
+
+  // Load doctors from API
+  const DOC_ICONS_IDX  = ['fa-stethoscope','fa-baby','fa-ear-listen','fa-venus'];
+  const DOC_COLORS_IDX = [
+    'linear-gradient(135deg,#0d9488,#0ea5e9)',
+    'linear-gradient(135deg,#10b981,#34d399)',
+    'linear-gradient(135deg,#6c5ce7,#a29bfe)',
+    'linear-gradient(135deg,#f59e0b,#fbbf24)'
+  ];
+  const RATINGS = ['4.9 (1,247)', '4.7 (892)', '4.8 (634)', '4.6 (1,056)'];
+  const QUALS   = ['MBBS, MD', 'MBBS, MD', 'MBBS, MS', 'MBBS, MD, DGO'];
+  const FEES    = ['₹400', '₹600', '₹500', '₹750'];
+
+  fetch('/api/doctors')
+    .then(r => r.json())
+    .then(docs => {
+      const grid = document.getElementById('doctor-listing');
+      if (!grid) return;
+      grid.innerHTML = docs.map((doc, i) => `
+        <div class="doctor-listing-card">
+          <div class="dl-avatar" style="background:${DOC_COLORS_IDX[i % 4]};color:white;">
+            <i class="fa-solid ${DOC_ICONS_IDX[i % 4]}"></i>
+          </div>
+          <div class="dl-name">${doc.name}</div>
+          <div class="dl-spec">${doc.specialization}</div>
+          <div class="dl-qual">${QUALS[i % 4]}</div>
+          <div class="dl-rating">
+            <span class="dl-stars">★★★★${i === 3 ? '☆' : '★'}</span>
+            <span style="font-size:0.78rem;color:var(--muted);">${RATINGS[i % 4]}</span>
+          </div>
+          <div class="dl-meta">
+            <span>${doc.available_days || 'Mon–Fri'}</span>
+            <span>${doc.start_time || '09:00'} – ${doc.end_time || '17:00'}</span>
+          </div>
+          <div class="dl-fee">Consultation: ${FEES[i % 4]}</div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <a href="/booking" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;">Book Now</a>
+            <a href="/doctor" class="btn btn-ghost btn-sm">Dashboard</a>
+          </div>
+        </div>
+      `).join('');
     })
     .catch(() => {
-      const el = document.getElementById('stat-total');
-      if(el) el.textContent = '50,000+';
+      const grid = document.getElementById('doctor-listing');
+      if (grid) grid.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px;grid-column:1/-1;">Unable to load doctors. Please try again.</p>';
     });
-
-  // ── FIX 4: Geolocation detection for "Near You" ──────────
-  const locSub = document.getElementById('location-sub');
-  if (locSub && navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude.toFixed(4);
-        const lon = pos.coords.longitude.toFixed(4);
-        // Reverse geocode with free nominatim API
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
-          .then(r => r.json())
-          .then(data => {
-            const addr = data.address || {};
-            const area = addr.suburb || addr.neighbourhood || addr.city_district || addr.town || addr.city || '';
-            const city = addr.city || addr.town || addr.county || '';
-            const loc  = [area, city].filter(Boolean).join(', ');
-            locSub.textContent = loc ? `Near you · ${loc}` : 'Near your location';
-          })
-          .catch(() => { locSub.textContent = 'Near your location'; });
-      },
-      () => { locSub.textContent = 'Near you · Vadodara, Gujarat'; }
-    );
-  } else if (locSub) {
-    locSub.textContent = 'Near you · Vadodara, Gujarat';
-  }
 </script>
-<script src="/static/js/i18n.js"></script>
 </body>
 </html>

@@ -24,7 +24,7 @@ from model.predict import predict_wait
 # ─────────────────────────────────────────────────────────
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'clinicflow-dev-secret-change-in-prod')
+app.secret_key = os.environ.get('SECRET_KEY', 'healthbook-dev-secret-change-in-prod')
 app.config['JSON_SORT_KEYS'] = False
 
 logging.basicConfig(level=logging.INFO)
@@ -79,7 +79,7 @@ def get_or_create_user(email: str, name: str, google_sub: str) -> dict:
 
 
 def get_or_create_phone_user(phone: str, name: str = '') -> dict:
-    email_placeholder = f"{phone}@phone.clinicflow"
+    email_placeholder = f"{phone}@phone.healthbook"
     conn = get_db()
     try:
         user = conn.execute(
@@ -235,17 +235,6 @@ def booking():
     return render_template('booking.html', user=session.get('user'))
 
 
-@app.route('/packages')
-def packages():
-    return render_template('packages.html', user=session.get('user'))
-
-
-@app.route('/doctors')
-def doctors_page():
-    specialty = request.args.get('specialty', '')
-    return render_template('doctors.html', user=session.get('user'), specialty=specialty)
-
-
 @app.route('/token')
 def token():
     return render_template('token.html', user=session.get('user'))
@@ -386,19 +375,6 @@ def api_slots():
                 (doctor_id, date_str)
             ).fetchall()
         )
-
-        # ── FIX 1: Check doctor works on this day of week ──
-        from datetime import date as _date_cls
-        appt_date = _date_cls.fromisoformat(date_str)
-        day_names = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-        day_name  = day_names[appt_date.weekday()]
-        avail_days = [d.strip() for d in (doc['available_days'] or '').split(',')]
-        if day_name not in avail_days:
-            return jsonify({
-                'slots': [],
-                'available_days': doc['available_days'],
-                'unavailable': f"Doctor is not available on {day_name}. Works on: {', '.join(avail_days)}",
-            })
 
         start_h, start_m = map(int, doc['start_time'].split(':'))
         end_h,   end_m   = map(int, doc['end_time'].split(':'))
@@ -733,9 +709,9 @@ def api_analytics():
 
 if __name__ == '__main__':
     init_db()
-    print("==" * 25)
+    print("=" * 50)
     print("  HealthBook Server Starting...")
     print("  http://127.0.0.1:5000")
-    print("==" * 25)
+    print("=" * 50)
     debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
     app.run(debug=debug_mode, host='0.0.0.0', port=5000)

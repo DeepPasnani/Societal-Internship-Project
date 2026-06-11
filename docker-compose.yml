@@ -1,21 +1,21 @@
 version: "3.9"
 
 services:
-  clinicflow:
+  healthbook:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: clinicflow
+    container_name: healthbook
     restart: unless-stopped
     ports:
       - "8196:8196"
     volumes:
       # Persist the SQLite database and trained model outside the container
-      - clinicflow_data:/app/data
-      - clinicflow_model:/app/model
+      - healthbook_data:/app/data
+      - healthbook_model:/app/model
     environment:
       # ── Required for production ──────────────────────────
-      SECRET_KEY: ${SECRET_KEY:-clinicflow-dev-change-me}
+      SECRET_KEY: ${SECRET_KEY:-healthbook-dev-change-me}
       FLASK_DEBUG: ${FLASK_DEBUG:-false}
 
       # ── Google OAuth (get from console.cloud.google.com) ─
@@ -34,5 +34,5 @@ services:
       start_period: 20s
 
 volumes:
-  clinicflow_data:
-  clinicflow_model:
+  healthbook_data:
+  healthbook_model:

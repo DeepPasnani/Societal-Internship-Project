@@ -1,11 +1,8 @@
 /* ============================================================
-   booking.js — Appointment Booking Logic
-   Handles 3-step form, doctor card selection, slot loading,
-   form submission, success screen, Gujarati language toggle,
-   day-of-week validation, and consultation fee display.
+   booking.js — Appointment Booking (all bugs fixed)
    ============================================================ */
 
-// ── TRANSLATIONS ────────────────────────────────────────────
+// ── TRANSLATIONS ─────────────────────────────────────────────
 const translations = {
   en: {
     bookAppointment: "Book Appointment",
@@ -19,11 +16,7 @@ const translations = {
     minutes:         "minutes",
     step1:           "Patient Details",
     step2:           "Doctor & Time",
-    step3:           "Confirmation",
-    consultFee:      "Consultation Fee",
-    amountDue:       "Amount Due",
-    doctorUnavail:   "Doctor is not available on this day. Available: ",
-    noSlotsDay:      "No slots available — doctor does not work on this day.",
+    step3:           "Confirmation"
   },
   gu: {
     bookAppointment: "એપોઇન્ટમેન્ટ બુક કરો",
@@ -37,93 +30,67 @@ const translations = {
     minutes:         "મિનિટ",
     step1:           "દર્દીની વિગતો",
     step2:           "ડૉક્ટર અને સમય",
-    step3:           "પુષ્ટિ",
-    consultFee:      "પરામર્શ ફી",
-    amountDue:       "ચૂકવવાપાત્ર રકમ",
-    doctorUnavail:   "ડૉક્ટર આ દિવસે ઉપલબ્ધ નથી. ઉપલબ્ધ: ",
-    noSlotsDay:      "સ્લોટ ઉપલબ્ધ નથી — ડૉક્ટર આ દિવસે કામ કરતા નથી.",
+    step3:           "પુષ્ટિ"
   }
 };
 
-// Day name maps
-const DAY_MAP_EN = { Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6, Sun:0 };
-const DAY_NAMES_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const DAY_NAMES_GU = ['રવિ','સોમ','મંગળ','બુધ','ગુરુ','શુક્ર','શનિ'];
-
-// ── STATE ───────────────────────────────────────────────────
-let currentStep      = 1;
-let currentLang      = 'en';
-let selectedDoctorId   = null;
+// ── STATE ────────────────────────────────────────────────────
+let currentStep       = 1;
+let currentLang       = 'en';
+let selectedDoctorId  = null;
 let selectedDoctorName = '';
-let selectedDoctorData = null;   // full doctor object
-let selectedSlot       = null;
-let allDoctors         = [];
+let selectedDoctorDays = '';   // FIX: track available days
+let selectedSlot      = null;
+let allDoctors        = [];
 
 // ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const hamburger = document.getElementById('hamburger');
-  if (hamburger) {
-    hamburger.addEventListener('click', () => {
-      document.getElementById('navLinks').classList.toggle('open');
-    });
-  }
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
 
-  // Date: today as default, no past dates
+  // Date: today as default, no past dates, no dates more than 30 days out
   const dateInput = document.getElementById('inp-date');
-  const today = new Date().toISOString().split('T')[0];
+  const today     = new Date().toISOString().split('T')[0];
+  const maxDate   = new Date();
+  maxDate.setDate(maxDate.getDate() + 30);
   dateInput.min   = today;
+  dateInput.max   = maxDate.toISOString().split('T')[0];
   dateInput.value = today;
   dateInput.addEventListener('change', onDateChange);
 
   loadDoctors();
-
-  // Pre-select specialty or doctor_id if passed in URL
-  const params = new URLSearchParams(window.location.search);
-  const spec   = params.get('specialty');
-  const docId  = params.get('doctor_id');
-  if (spec)  window._preSelectSpecialty = spec.toLowerCase();
-  if (docId) window._preSelectDoctorId  = parseInt(docId);
 });
 
 // ── LANGUAGE TOGGLE ──────────────────────────────────────────
 function setLang(lang) {
   currentLang = lang;
-  const enBtn = document.getElementById('lang-en');
-  const guBtn = document.getElementById('lang-gu');
-  if (enBtn) enBtn.classList.toggle('active', lang === 'en');
-  if (guBtn) guBtn.classList.toggle('active', lang === 'gu');
-
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-gu').classList.toggle('active', lang === 'gu');
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (translations[lang][key]) el.textContent = translations[lang][key];
   });
-
-  // Re-render doctor cards with new language if loaded
-  if (allDoctors.length) renderDoctorCards(allDoctors);
-  // Update fee display language
-  updateFeeDisplay();
 }
 
-// ── STEP NAVIGATION ───────────────────────────────────────────
+// ── STEP NAVIGATION ──────────────────────────────────────────
 function goToStep(step) {
   if (step > currentStep && !validateStep(currentStep)) return;
 
   for (let i = 1; i <= 3; i++) {
     const sidebar = document.getElementById(`sidebar-step-${i}`);
-    if (!sidebar) continue;
     sidebar.classList.remove('active', 'completed');
-    if (i < step) sidebar.classList.add('completed');
+    if (i < step)  sidebar.classList.add('completed');
     if (i === step) sidebar.classList.add('active');
+
     const numEl = sidebar.querySelector('.step-number');
-    if (numEl) {
-      if (i < step) numEl.innerHTML = '<i class="fa-solid fa-check" style="font-size:13px;"></i>';
-      else numEl.textContent = i;
-    }
+    numEl.innerHTML = i < step
+      ? '<i class="fa-solid fa-check" style="font-size:13px;"></i>'
+      : String(i);
   }
 
   document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-  const target = document.getElementById(`step-${step}`);
-  if (target) target.classList.add('active');
+  document.getElementById(`step-${step}`).classList.add('active');
   currentStep = step;
 
   if (step === 3) fillConfirmation();
@@ -135,30 +102,34 @@ function validateStep(step) {
     const name  = document.getElementById('inp-name').value.trim();
     const phone = document.getElementById('inp-phone').value.trim();
     const errEl = document.getElementById('step1-error');
-    if (!name)  { showStepError(errEl, 'Please enter your full name.'); return false; }
-    if (!/^\d{10}$/.test(phone)) { showStepError(errEl, 'Please enter a valid 10-digit phone number.'); return false; }
+    if (!name) {
+      showStepError(errEl, 'Please enter your full name.'); return false;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      showStepError(errEl, 'Please enter a valid 10-digit phone number.'); return false;
+    }
     errEl.style.display = 'none';
     return true;
   }
   if (step === 2) {
     const errEl = document.getElementById('step2-error');
-    if (!selectedDoctorId) { showStepError(errEl, 'Please select a doctor.'); return false; }
-    const date = document.getElementById('inp-date').value;
-    if (!date)             { showStepError(errEl, 'Please select an appointment date.'); return false; }
-
-    // ── FIX 1: Validate doctor available on chosen day ──
-    if (selectedDoctorData) {
-      const dayIdx = new Date(date + 'T00:00:00').getDay(); // 0=Sun
-      const dayName = DAY_NAMES_EN[dayIdx];
-      const availDays = (selectedDoctorData.available_days || '').split(',').map(d => d.trim());
-      if (!availDays.includes(dayName)) {
-        const availStr = availDays.join(', ');
-        showStepError(errEl, (translations[currentLang].doctorUnavail || 'Doctor unavailable. Available: ') + availStr);
-        return false;
-      }
+    if (!selectedDoctorId) {
+      showStepError(errEl, 'Please select a doctor.'); return false;
     }
-
-    if (!selectedSlot) { showStepError(errEl, 'Please select a time slot.'); return false; }
+    const date = document.getElementById('inp-date').value;
+    if (!date) {
+      showStepError(errEl, 'Please select an appointment date.'); return false;
+    }
+    // FIX: check doctor availability on selected day
+    if (!isDoctorAvailable(selectedDoctorDays, date)) {
+      const dayName = new Date(date + 'T00:00:00')
+        .toLocaleDateString('en-IN', { weekday: 'long' });
+      showStepError(errEl, `${selectedDoctorName} is not available on ${dayName}. Please choose a different date.`);
+      return false;
+    }
+    if (!selectedSlot) {
+      showStepError(errEl, 'Please select a time slot.'); return false;
+    }
     errEl.style.display = 'none';
     return true;
   }
@@ -166,195 +137,163 @@ function validateStep(step) {
 }
 
 function showStepError(el, msg) {
-  if (!el) return;
-  el.textContent = msg;
+  el.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${msg}`;
   el.style.display = 'block';
 }
 
+// FIX: Check if a date falls on one of doctor's available days
+function isDoctorAvailable(availableDays, dateStr) {
+  if (!availableDays) return true; // no restriction set
+  const dayMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+  const dow    = new Date(dateStr + 'T00:00:00').getDay();
+  const dayAbbr = dayMap[dow];
+  return availableDays.split(',').map(d => d.trim()).includes(dayAbbr);
+}
+
 // ── DOCTORS ──────────────────────────────────────────────────
+const DOC_ICONS  = ['fa-stethoscope', 'fa-baby', 'fa-ear-listen', 'fa-venus'];
+const DOC_COLORS = [
+  'linear-gradient(135deg,#0d9488,#0ea5e9)',
+  'linear-gradient(135deg,#10b981,#34d399)',
+  'linear-gradient(135deg,#6c5ce7,#a29bfe)',
+  'linear-gradient(135deg,#f59e0b,#fbbf24)'
+];
+
 function loadDoctors() {
   fetch('/api/doctors')
     .then(r => r.json())
     .then(docs => {
       allDoctors = docs;
       renderDoctorCards(docs);
-      // Auto-select by doctor_id (from "Book Now" link)
-      if (window._preSelectDoctorId) {
-        const match = docs.find(d => d.id === window._preSelectDoctorId);
-        if (match) { selectDoctor(match.id, match.name, match); goToStep(2); }
-      }
-      // Auto-select if specialty pre-filter
-      else if (window._preSelectSpecialty) {
-        const match = docs.find(d =>
-          d.specialization.toLowerCase().includes(window._preSelectSpecialty)
-        );
-        if (match) selectDoctor(match.id, match.name, match);
-      }
     })
     .catch(() => {
-      const grid = document.getElementById('doctor-cards');
-      if (grid) grid.innerHTML = '<p style="color:var(--danger);">Failed to load doctors. Please refresh.</p>';
+      document.getElementById('doctor-cards').innerHTML =
+        '<p style="color:var(--danger);padding:12px;"><i class="fa-solid fa-circle-exclamation"></i> Failed to load doctors. Please refresh.</p>';
     });
 }
 
-const DOC_ICONS   = ['fa-stethoscope','fa-baby','fa-ear-listen','fa-venus'];
-const DOC_COLORS  = [
-  'linear-gradient(135deg,#1a6cf5,#5b8af5)',
-  'linear-gradient(135deg,#00b894,#00cec9)',
-  'linear-gradient(135deg,#6c5ce7,#a29bfe)',
-  'linear-gradient(135deg,#e17055,#fab1a0)',
-];
-
 function renderDoctorCards(docs) {
   const grid = document.getElementById('doctor-cards');
-  if (!grid) return;
-  const today     = new Date();
-  const todayName = DAY_NAMES_EN[today.getDay()];
-
-  grid.innerHTML = docs.map((doc, i) => {
-    const availDays = (doc.available_days || '').split(',').map(d => d.trim());
-    const isAvailToday = availDays.includes(todayName);
-    const availLabel = currentLang === 'gu'
-      ? availDays.map(d => { const idx = DAY_NAMES_EN.indexOf(d); return idx>=0 ? DAY_NAMES_GU[idx] : d; }).join(', ')
-      : availDays.join(', ');
-    const feeLabel = doc.consultation_fee
-      ? `<span class="doc-fee">₹${doc.consultation_fee}</span>`
-      : '';
-    const availDot = isAvailToday
-      ? '<span class="doc-avail-dot avail-green" title="Available today"></span>'
-      : '<span class="doc-avail-dot avail-grey" title="Not available today"></span>';
-    const selected = selectedDoctorId === doc.id ? ' selected' : '';
-
-    return `
-      <div class="doctor-card${selected}" id="doc-card-${doc.id}"
-           onclick="selectDoctor(${doc.id}, '${escapeHtml(doc.name)}', ${JSON.stringify(doc).replace(/'/g,"&#39;")})">
-        <div class="doc-avatar" style="background:${DOC_COLORS[i % 4]};">
-          <i class="fa-solid ${DOC_ICONS[i % 4]}"></i>
-          ${availDot}
-        </div>
-        <div class="doc-info">
-          <h4>${escapeHtml(doc.name)}</h4>
-          <small>${escapeHtml(doc.specialization)}</small>
-          <span class="doc-days">${availLabel}</span>
-          ${feeLabel}
-        </div>
-      </div>`;
-  }).join('');
+  if (!docs.length) {
+    grid.innerHTML = '<p style="color:var(--muted);padding:12px;">No doctors available.</p>';
+    return;
+  }
+  grid.innerHTML = docs.map((doc, i) => `
+    <div class="doctor-card" id="doc-card-${doc.id}"
+         onclick="selectDoctor(${doc.id}, '${escapeAttr(doc.name)}', '${escapeAttr(doc.available_days || '')}')">
+      <div class="doc-avatar" style="background:${DOC_COLORS[i % 4]};">
+        <i class="fa-solid ${DOC_ICONS[i % 4]}"></i>
+      </div>
+      <div class="doc-info">
+        <h4>${escapeHtml(doc.name)}</h4>
+        <small>${escapeHtml(doc.specialization)}</small>
+        <span class="doc-days">${escapeHtml(doc.available_days || 'Mon–Fri')}</span>
+      </div>
+    </div>
+  `).join('');
 }
 
-function selectDoctor(id, name, docData) {
-  // docData might be a JSON string from inline onclick
-  if (typeof docData === 'string') {
-    try { docData = JSON.parse(docData); } catch(e) { docData = null; }
-  }
+function selectDoctor(id, name, availableDays) {
   selectedDoctorId   = id;
   selectedDoctorName = name;
-  selectedDoctorData = docData;
+  selectedDoctorDays = availableDays;  // FIX: store days
   selectedSlot       = null;
 
   document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
   const card = document.getElementById(`doc-card-${id}`);
   if (card) card.classList.add('selected');
 
-  // Show fee for selected doctor
-  updateFeeDisplay();
+  // FIX: clear any previous step2 error
+  document.getElementById('step2-error').style.display = 'none';
 
-  // Immediately validate chosen date against new doctor's availability
-  onDateChange();
-}
-
-function updateFeeDisplay() {
-  const feeWrap = document.getElementById('fee-display');
-  if (!feeWrap) return;
-  if (selectedDoctorData && selectedDoctorData.consultation_fee) {
-    const label = translations[currentLang].consultFee || 'Consultation Fee';
-    feeWrap.style.display = 'flex';
-    feeWrap.innerHTML = `<i class="fa-solid fa-indian-rupee-sign"></i>&nbsp;<strong>${label}:</strong>&nbsp;₹${selectedDoctorData.consultation_fee}`;
-  } else {
-    feeWrap.style.display = 'none';
+  const date = document.getElementById('inp-date').value;
+  if (date) {
+    if (!isDoctorAvailable(availableDays, date)) {
+      // Show availability warning without blocking slot load
+      const container = document.getElementById('slot-container');
+      const dayName   = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long' });
+      container.innerHTML = `<p style="color:var(--warning);font-size:0.875rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        ${escapeHtml(name)} is not available on ${dayName}. Please pick another date.
+      </p>`;
+    } else {
+      loadSlots(id, date);
+    }
   }
 }
 
 function onDateChange() {
-  const date = document.getElementById('inp-date').value;
-  const warnEl = document.getElementById('date-unavail-warn');
-  const nextBtn = document.getElementById('step2-next-btn');
+  selectedSlot = null;
+  document.getElementById('step2-error').style.display = 'none';
 
-  if (selectedDoctorId && selectedDoctorData && date) {
-    const dayIdx  = new Date(date + 'T00:00:00').getDay();
-    const dayName = DAY_NAMES_EN[dayIdx];
-    const availDays = (selectedDoctorData.available_days || '').split(',').map(d => d.trim());
-
-    if (!availDays.includes(dayName)) {
-      const msg = (translations[currentLang].doctorUnavail || 'Doctor unavailable. Available: ') + availDays.join(', ');
-      if (warnEl) { warnEl.textContent = msg; warnEl.style.display = 'block'; }
-      // Clear slot grid and disable Next
-      const container = document.getElementById('slot-container');
-      if (container) container.innerHTML = `<div class="slot-unavail-msg"><i class="fa-solid fa-calendar-xmark"></i> ${translations[currentLang].noSlotsDay || 'Doctor does not work on this day.'}</div>`;
-      if (nextBtn) { nextBtn.disabled = true; nextBtn.style.opacity = '0.5'; }
-      selectedSlot = null;
-      return;
-    } else {
-      if (warnEl) warnEl.style.display = 'none';
-      if (nextBtn) { nextBtn.disabled = false; nextBtn.style.opacity = '1'; }
-    }
-    loadSlots(selectedDoctorId, date);
-  } else if (selectedDoctorId && date) {
-    loadSlots(selectedDoctorId, date);
+  if (!selectedDoctorId) {
+    document.getElementById('slot-container').innerHTML =
+      '<p style="color:var(--muted);font-size:0.875rem;"><i class="fa-solid fa-info-circle"></i> Select a doctor first.</p>';
+    return;
   }
+  const date = document.getElementById('inp-date').value;
+  if (!isDoctorAvailable(selectedDoctorDays, date)) {
+    const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'long' });
+    document.getElementById('slot-container').innerHTML = `
+      <p style="color:var(--warning);font-size:0.875rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        ${escapeHtml(selectedDoctorName)} is not available on ${dayName}. Please select a different date.
+      </p>`;
+    return;
+  }
+  loadSlots(selectedDoctorId, date);
 }
 
 // ── TIME SLOTS ────────────────────────────────────────────────
 function loadSlots(doctorId, date) {
   const container = document.getElementById('slot-container');
-  if (!container) return;
-  container.innerHTML = '<div style="color:var(--muted); font-size:0.85rem;"><i class="fa-solid fa-spinner fa-spin"></i> Loading slots...</div>';
+  container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:8px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Loading slots...</div>';
   selectedSlot = null;
 
   fetch(`/api/slots?doctor_id=${doctorId}&date=${date}`)
     .then(r => r.json())
     .then(data => {
-      if (data.error) { container.innerHTML = `<p style="color:var(--danger);">${data.error}</p>`; return; }
-      // FIX 1: Backend returns available_days — check it
-      if (data.unavailable) {
-        const t = translations[currentLang];
-        container.innerHTML = `<div class="slot-unavail-msg"><i class="fa-solid fa-calendar-xmark"></i> ${t.noSlotsDay || data.unavailable}</div>`;
-        return;
-      }
+      if (data.error) throw new Error(data.error);
       if (!data.slots || data.slots.length === 0) {
-        container.innerHTML = '<p style="color:var(--muted); font-size:0.875rem;">No slots available for this date.</p>';
+        container.innerHTML = '<p style="color:var(--muted);font-size:0.875rem;">No slots available for this date.</p>';
         return;
       }
       renderSlots(data.slots);
     })
-    .catch(() => {
-      container.innerHTML = '<p style="color:var(--danger); font-size:0.875rem;">Failed to load slots.</p>';
+    .catch(err => {
+      container.innerHTML = `<p style="color:var(--danger);font-size:0.875rem;"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.message || 'Failed to load slots.')}</p>`;
     });
 }
 
 function renderSlots(slots) {
   const container = document.getElementById('slot-container');
+  const available = slots.filter(s => !s.booked).length;
   container.innerHTML = `
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;">
+      <i class="fa-solid fa-circle-check" style="color:var(--accent);"></i>
+      ${available} slot${available !== 1 ? 's' : ''} available
+    </p>
     <div class="slot-grid">
-      ${slots.map(s => `
-        <div class="time-slot${s.booked ? ' booked' : ''}"
-             id="slot-${s.time.replace(':','')}"
-             onclick="${s.booked ? '' : `selectSlot('${s.time}')`}"
-             title="${s.booked ? 'Already booked' : s.time}">
-          ${s.time}
-        </div>
-      `).join('')}
+      ${slots.map(s => {
+        const slotId = `slot-${s.time.replace(':', '')}`;
+        const cls    = s.booked ? 'time-slot booked' : 'time-slot';
+        const onclick = s.booked ? '' : `onclick="selectSlot('${s.time}')"`;
+        const title  = s.booked ? 'Already booked' : `Select ${s.time}`;
+        return `<div class="${cls}" id="${slotId}" ${onclick} title="${title}">${s.time}</div>`;
+      }).join('')}
     </div>`;
 }
 
 function selectSlot(time) {
   selectedSlot = time;
   document.querySelectorAll('.time-slot:not(.booked)').forEach(el => el.classList.remove('selected'));
-  const slotEl = document.getElementById(`slot-${time.replace(':','')}`);
-  if (slotEl) slotEl.classList.add('selected');
+  const el = document.getElementById(`slot-${time.replace(':', '')}`);
+  if (el) el.classList.add('selected');
+  // FIX: clear error when slot is picked
+  document.getElementById('step2-error').style.display = 'none';
 }
 
-// ── CONFIRMATION ──────────────────────────────────────────────
+// ── CONFIRMATION ─────────────────────────────────────────────
 function fillConfirmation() {
   const name  = document.getElementById('inp-name').value.trim();
   const phone = document.getElementById('inp-phone').value.trim();
@@ -363,26 +302,16 @@ function fillConfirmation() {
   document.getElementById('confirm-name').textContent   = name;
   document.getElementById('confirm-phone').textContent  = phone;
   document.getElementById('confirm-doctor').textContent = selectedDoctorName;
-  document.getElementById('confirm-date').textContent   = formatDate(date);
+  document.getElementById('confirm-date').textContent   = formatDate(date);   // FIX: always formatted
   document.getElementById('confirm-time').textContent   = selectedSlot || '—';
-
-  // FIX 3: Show amount due in confirmation
-  const feeRow = document.getElementById('confirm-fee-row');
-  if (feeRow && selectedDoctorData && selectedDoctorData.consultation_fee) {
-    feeRow.style.display = 'flex';
-    document.getElementById('confirm-fee').textContent = `₹${selectedDoctorData.consultation_fee}`;
-  } else if (feeRow) {
-    feeRow.style.display = 'none';
-  }
 }
 
 // ── SUBMIT ────────────────────────────────────────────────────
 function submitBooking() {
-  const errEl = document.getElementById('step3-error');
-  errEl.style.display = 'none';
-
+  const errEl    = document.getElementById('step3-error');
   const submitBtn = document.getElementById('submit-btn');
-  submitBtn.disabled = true;
+  errEl.style.display = 'none';
+  submitBtn.disabled  = true;
   submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Booking...';
 
   const payload = {
@@ -391,25 +320,29 @@ function submitBooking() {
     age:              parseInt(document.getElementById('inp-age').value) || null,
     doctor_id:        selectedDoctorId,
     appointment_date: document.getElementById('inp-date').value,
-    appointment_time: selectedSlot,
+    appointment_time: selectedSlot
   };
 
   fetch('/api/book', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload),
+    body:    JSON.stringify(payload)
   })
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) {
-        if (data.redirect) { window.location.href = data.redirect; return; }
-        throw new Error(data.error);
+    .then(r => {
+      // FIX: handle 401 redirect to login
+      if (r.status === 401) {
+        window.location.href = '/login?next=/booking';
+        throw new Error('Please sign in to book an appointment.');
       }
+      return r.json();
+    })
+    .then(data => {
+      if (data.error) throw new Error(data.error);
       showSuccess(data);
     })
     .catch(err => {
-      showStepError(errEl, 'Booking failed: ' + (err.message || 'Please try again.'));
-      submitBtn.disabled = false;
+      showStepError(errEl, err.message || 'Booking failed. Please try again.');
+      submitBtn.disabled  = false;
       submitBtn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> <span data-i18n="confirmBooking">${translations[currentLang].confirmBooking}</span>`;
     });
 }
@@ -418,32 +351,40 @@ function showSuccess(data) {
   document.getElementById('booking-form-wrap').style.display = 'none';
   const screen = document.getElementById('success-screen');
   screen.classList.add('show');
+  screen.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   document.getElementById('success-token').textContent  = `#${data.token_number}`;
   document.getElementById('success-wait').textContent   = data.predicted_wait_minutes;
   document.getElementById('success-doctor').textContent = data.doctor_name;
   document.getElementById('success-time').textContent   = `${formatDate(data.appointment_date)} · ${data.appointment_time}`;
-
   showToast('Appointment booked successfully!', 'success');
 }
 
 function resetBooking() {
+  // FIX: properly reset all state
+  selectedDoctorId   = null;
+  selectedDoctorName = '';
+  selectedDoctorDays = '';
+  selectedSlot       = null;
+  currentStep        = 1;
+
   document.getElementById('booking-form-wrap').style.display = 'block';
   document.getElementById('success-screen').classList.remove('show');
   document.getElementById('inp-name').value  = '';
   document.getElementById('inp-phone').value = '';
   document.getElementById('inp-age').value   = '';
-  selectedDoctorId   = null;
-  selectedDoctorName = '';
-  selectedDoctorData = null;
-  selectedSlot       = null;
+  document.getElementById('step1-error').style.display = 'none';
+  document.getElementById('step2-error').style.display = 'none';
+  document.getElementById('step3-error').style.display = 'none';
+  document.getElementById('submit-btn').disabled = false;  // FIX: correct ID
+  document.getElementById('submit-btn').innerHTML = '<i class="fa-solid fa-calendar-check"></i> <span data-i18n="confirmBooking">Confirm Booking</span>';
 
   document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('selected'));
-  const sc = document.getElementById('slot-container');
-  if (sc) sc.innerHTML = '<p style="color:var(--muted); font-size:0.875rem;"><i class="fa-solid fa-info-circle"></i> Select a doctor and date first</p>';
-  const fd = document.getElementById('fee-display');
-  if (fd) fd.style.display = 'none';
+  document.getElementById('slot-container').innerHTML =
+    '<p style="color:var(--muted);font-size:0.875rem;"><i class="fa-solid fa-info-circle"></i> Select a doctor and date first</p>';
+
   goToStep(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -455,7 +396,12 @@ function formatDate(dateStr) {
 
 function escapeHtml(str) {
   if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
 function showToast(msg, type = 'success') {

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏥 HealthBox
+# 🏥 HealthBook
 
 ### Smart Clinic Management for Small Clinics & PHCs
 
@@ -20,7 +20,7 @@
 
 ## 🩺 The Problem
 
-Small clinics and PHCs in Gujarat run entirely on paper. Patients arrive with no idea how long they'll wait. Doctors have no visibility into their daily load. Administrators have no data to make decisions with. ClinicFlow digitizes the entire workflow — from the moment a patient books to the moment they are called in — with zero external infrastructure dependencies.
+Small clinics and PHCs in Gujarat run entirely on paper. Patients arrive with no idea how long they'll wait. Doctors have no visibility into their daily load. Administrators have no data to make decisions with. HealthBook digitizes the entire workflow — from the moment a patient books to the moment they are called in — with zero external infrastructure dependencies.
 
 ---
 
@@ -74,43 +74,35 @@ Training data is calibrated to real-world no-show statistics from the Kaggle Med
 | Charts | Chart.js 4.x |
 | Server | Gunicorn · Docker |
 
-## 📁 Project Structure
+## 🗂️ Project Structure
 
-```text
-.
-├── app.py                      # All routes and authentication logic
-├── database.py                 # SQLite setup, WAL mode, atomic token allocation
+├── app.py                  # All routes and auth logic
+├── database.py             # SQLite setup, WAL mode, atomic token allocation
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
 ├── .gitignore
-│
 ├── model/
-│   ├── train.py                # Model trainer
-│   ├── predict.py              # Wait time prediction with fallback formula
-│   └── wait_model.pkl          # Trained model file (auto-generated)
-│
+│   ├── train.py            # Model trainer
+│   ├── predict.py          # Wait time prediction with fallback formula
+│   └── wait_model.pkl      # Trained model file (auto-generated)
 ├── data/
 │   └── KaggleV2-May-2016.csv   # Optional real-world training data
-│
 ├── static/
-│   ├── css/
-│   │   └── style.css
-│   │
+│   ├── css/style.css
 │   └── js/
 │       ├── booking.js
 │       ├── token.js
 │       ├── dashboard.js
 │       └── analytics.js
-│
 └── templates/
-    ├── login.html
-    ├── index.html
-    ├── booking.html
-    ├── token.html
-    ├── doctor.html
-    └── analytics.html
-```
+├── login.html
+├── index.html
+├── booking.html
+├── token.html
+├── doctor.html
+└── analytics.html
+
 ---
 
 <div align="center">
@@ -120,12 +112,4 @@ Training data is calibrated to real-world no-show statistics from the Kaggle Med
 </div>
 ---
 
-
-
-
-
-
-
-
-
-
+## 🗂️ Project Structure

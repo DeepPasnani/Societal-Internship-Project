@@ -9,10 +9,10 @@ let selectedAppointmentId = null;
 let allDoctors = [];
 
 const DOC_COLORS = [
-  'linear-gradient(135deg,#1a6cf5,#5b8af5)',
-  'linear-gradient(135deg,#00b894,#00cec9)',
+  'linear-gradient(135deg,#0d9488,#0ea5e9)',
+  'linear-gradient(135deg,#10b981,#34d399)',
   'linear-gradient(135deg,#6c5ce7,#a29bfe)',
-  'linear-gradient(135deg,#e17055,#fab1a0)'
+  'linear-gradient(135deg,#f59e0b,#fbbf24)'
 ];
 const DOC_ICONS = ['fa-stethoscope', 'fa-baby', 'fa-ear-listen', 'fa-venus'];
 
@@ -22,11 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('navLinks').classList.toggle('open');
   });
 
-  // Default date = today; disallow past dates
+  // Default date = today; allow 30 days back and 7 days forward
   const dateInput = document.getElementById('schedule-date');
-  const todayStr = new Date().toISOString().split('T')[0];
-  dateInput.min   = todayStr;
-  dateInput.value = todayStr;
+  const today = new Date();
+  const minDate = new Date(today);
+  minDate.setDate(minDate.getDate() - 30);
+  const maxDate = new Date(today);
+  maxDate.setDate(maxDate.getDate() + 7);
+  dateInput.value = today.toISOString().split('T')[0];
+  dateInput.min   = minDate.toISOString().split('T')[0];
+  dateInput.max   = maxDate.toISOString().split('T')[0];
   dateInput.addEventListener('change', loadSchedule);
 
   loadDoctors();
