@@ -1,6 +1,6 @@
 import os
+import re
 import sys
-import json
 import logging
 import requests
 from datetime import datetime, timedelta, date
@@ -16,7 +16,7 @@ from flask_limiter.util import get_remote_address
 
 sys.path.insert(0, os.path.dirname(__file__))
 from database import (
-    init_db, get_db, get_next_token, get_next_token_atomic, get_tokens_ahead,
+    init_db, get_db, get_next_token_atomic, get_tokens_ahead,
     get_doctor_no_show_rate
 )
 from model.predict import predict_wait
@@ -139,18 +139,6 @@ def login_required_api(f):
     return decorated
 
 
-def role_redirect_url(role):
-    if role == 'admin':
-        return url_for('analytics')
-    elif role == 'doctor':
-        return url_for('doctor')
-    return url_for('index')
-
-
-def role_redirect(role):
-    return redirect(role_redirect_url(role))
-
-
 def role_required(*roles):
     def decorator(f):
         @wraps(f)
@@ -178,7 +166,7 @@ def role_required_api(*roles):
 
 
 def get_role_redirect_url(role: str, next_url: str = '') -> str:
-    if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+    if next_url and re.match(r'^/[a-zA-Z0-9/_\-?=&%#]*$', next_url):
         return next_url
     if role == 'admin':
         return url_for('analytics')
@@ -205,9 +193,9 @@ def login_page():
 
 @app.route('/auth/google')
 def auth_google():
-    redirect_uri = url_for('auth_google_callback', _external=True, next=request.args.get('next') or '')
     if request.args.get('next'):
         session['oauth_next'] = request.args.get('next')
+    redirect_uri = url_for('auth_google_callback', _external=True)
     return google.authorize_redirect(redirect_uri)
 
 
@@ -372,9 +360,22 @@ def api_book():
     name             = data.get('name', '').strip()[:100]
     phone            = data.get('phone', '').strip()[:15]
     age              = data.get('age')
-    doctor_id        = int(data.get('doctor_id', 1))
     appointment_date = data.get('appointment_date', '')
     appointment_time = data.get('appointment_time', '')
+
+    try:
+        doctor_id = int(data.get('doctor_id') or 0)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid doctor_id'}), 400
+    if doctor_id <= 0:
+        return jsonify({'error': 'Invalid doctor_id'}), 400
+
+    try:
+        age_int = int(age) if age is not None and age != '' else 35
+        if not (0 <= age_int <= 120):
+            age_int = 35
+    except (ValueError, TypeError):
+        age_int = 35
 
     if not all([name, phone, appointment_date, appointment_time]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -419,7 +420,7 @@ def api_book():
         else:
             cursor = conn.execute(
                 "INSERT INTO patients (name,phone,age) VALUES (?,?,?)",
-                (name, phone, age)
+                (name, phone, age_int)
             )
             patient_id = cursor.lastrowid
 
@@ -436,7 +437,10 @@ def api_book():
         token_number = get_next_token_atomic(conn, doctor_id, appointment_date)
         tokens_ahead = get_tokens_ahead(doctor_id, appointment_date, token_number)
 
-        appt_dt = datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
+        try:
+            appt_dt = datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
+        except ValueError:
+            return jsonify({'error': 'Invalid time format. Use HH:MM (e.g. 09:30)'}), 400
         today       = date.today()
         appt_date   = appt_dt.date()
         day_gap     = max(0, (appt_date - today).days)
@@ -447,7 +451,7 @@ def api_book():
             'day_of_week':      appt_dt.weekday(),
             'tokens_ahead':     tokens_ahead,
             'day_gap':          day_gap,
-            'age':              int(age) if age else 35,
+            'age':              age_int,
             'sms_received':     0,
         }
         predicted_wait = predict_wait(features)

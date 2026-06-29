@@ -227,18 +227,6 @@ def get_next_token_atomic(conn, doctor_id: int, date: str) -> int:
     return result + 1
 
 
-def get_next_token(doctor_id: int, date: str) -> int:
-    conn = get_db()
-    try:
-        result = conn.execute(
-            "SELECT COALESCE(MAX(token_number), 0) FROM appointments WHERE doctor_id=? AND appointment_date=?",
-            (doctor_id, date)
-        ).fetchone()[0]
-        return result + 1
-    finally:
-        conn.close()
-
-
 def get_tokens_ahead(doctor_id: int, date: str, token_number: int) -> int:
     conn = get_db()
     try:

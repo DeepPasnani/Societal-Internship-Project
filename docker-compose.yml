@@ -15,7 +15,8 @@ services:
       - healthbook_model:/app/model
     environment:
       # ── Required for production ──────────────────────────
-      SECRET_KEY: ${SECRET_KEY:-healthbook-dev-change-me}
+      SECRET_KEY: ${SECRET_KEY}
+      FLASK_ENV: ${FLASK_ENV:-production}
       FLASK_DEBUG: ${FLASK_DEBUG:-false}
 
       # ── Google OAuth (get from console.cloud.google.com) ─
