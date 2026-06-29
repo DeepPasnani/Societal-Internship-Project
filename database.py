@@ -95,6 +95,11 @@ def init_db():
         _seed_appointments(c)
         conn.commit()
 
+    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
+    if ADMIN_EMAIL:
+        c.execute("UPDATE users SET role='admin' WHERE email=?", (ADMIN_EMAIL,))
+        conn.commit()
+
     conn.close()
 
 

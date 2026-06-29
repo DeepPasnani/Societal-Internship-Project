@@ -243,6 +243,13 @@
 </script>
 
 <script>
+  const loginParams = new URLSearchParams(window.location.search);
+  const loginNext = loginParams.get('next') || '';
+  const googleLink = document.querySelector('.btn-google');
+  if (googleLink) {
+    googleLink.href = '/auth/google' + (loginNext ? '?next=' + encodeURIComponent(loginNext) : '');
+  }
+
   let _confirmationResult = null;
 
   function showError(msg) {
@@ -311,11 +318,11 @@
       const resp = await fetch('/auth/phone/verify', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ idToken, phone }),
+        body: JSON.stringify({ idToken, phone, next: loginNext }),
       });
       const data = await resp.json();
       if (data.success) {
-        window.location.href = '/';
+        window.location.href = data.redirect_url || '/';
       } else {
         showError(data.error || 'Verification failed.');
         btn.disabled = false;

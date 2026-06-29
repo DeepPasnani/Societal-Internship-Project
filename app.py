@@ -121,6 +121,44 @@ def login_required_api(f):
     return decorated
 
 
+def role_redirect_url(role):
+    if role == 'admin':
+        return url_for('analytics')
+    elif role == 'doctor':
+        return url_for('doctor')
+    return url_for('index')
+
+
+def role_redirect(role):
+    return redirect(role_redirect_url(role))
+
+
+def role_required(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if 'user' not in session:
+                return redirect(url_for('login_page', next=request.path))
+            if session['user'].get('role') not in roles:
+                abort(403)
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
+def role_required_api(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if 'user' not in session:
+                return jsonify({'error': 'Authentication required'}), 401
+            if session['user'].get('role') not in roles:
+                return jsonify({'error': 'Forbidden'}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
 # ─────────────────────────────────────────────────────────
 # AUTH ROUTES
 # ─────────────────────────────────────────────────────────
@@ -138,7 +176,7 @@ def login_page():
 
 @app.route('/auth/google')
 def auth_google():
-    redirect_uri = url_for('auth_google_callback', _external=True)
+    redirect_uri = url_for('auth_google_callback', _external=True, next=request.args.get('next') or '')
     return google.authorize_redirect(redirect_uri)
 
 
@@ -157,7 +195,9 @@ def auth_google_callback():
             'email': user['email'], 'role': user['role'],
             'auth_provider': 'google',
         }
-        return redirect(url_for('index'))
+        role = session['user'].get('role')
+        next_url = request.args.get('next') or role_redirect_url(role)
+        return redirect(next_url)
     except Exception as e:
         logger.error(f"Google auth error: {e}")
         return redirect(url_for('login_page') + '?error=google_auth_failed')
@@ -205,7 +245,9 @@ def auth_phone_verify():
         'email': user['email'], 'role': user['role'],
         'auth_provider': 'phone', 'phone': phone,
     }
-    return jsonify({'success': True, 'user': session['user']})
+    role = session['user'].get('role')
+    next_url = data.get('next') or role_redirect_url(role)
+    return jsonify({'success': True, 'redirect_url': next_url, 'user': session['user']})
 
 
 @app.route('/auth/logout')
@@ -219,6 +261,11 @@ def api_me():
     if 'user' in session:
         return jsonify({'user': session['user'], 'authenticated': True})
     return jsonify({'authenticated': False})
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html', user=session.get('user')), 403
 
 
 # ─────────────────────────────────────────────────────────
@@ -241,11 +288,13 @@ def token():
 
 
 @app.route('/doctor')
+@role_required('doctor', 'admin')
 def doctor():
     return render_template('doctor.html', user=session.get('user'))
 
 
 @app.route('/analytics')
+@role_required('admin')
 def analytics():
     return render_template('analytics.html', user=session.get('user'))
 
@@ -442,7 +491,7 @@ def api_queue():
 # ─────────────────────────────────────────────────────────
 
 @app.route('/api/update-token', methods=['POST'])
-@login_required_api
+@role_required_api('doctor', 'admin')
 def api_update_token():
     data           = request.get_json() or {}
     appointment_id = data.get('appointment_id')
@@ -537,6 +586,7 @@ def api_doctor_schedule():
 # ─────────────────────────────────────────────────────────
 
 @app.route('/api/today-stats')
+@role_required_api('admin', 'doctor')
 def api_today_stats():
     today = datetime.now().strftime('%Y-%m-%d')
     conn  = get_db()
@@ -571,6 +621,7 @@ def api_today_stats():
 # ─────────────────────────────────────────────────────────
 
 @app.route('/api/analytics')
+@role_required_api('admin')
 def api_analytics():
     range_param = request.args.get('range', 'week')
     today       = datetime.now().date()

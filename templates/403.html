@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Denied</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <style>
+    .forbidden-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      background: var(--bg);
+    }
+    .forbidden-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(26,108,245,0.08);
+    }
+    .forbidden-card h1 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-family: var(--font-heading);
+    }
+    .forbidden-card p {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="forbidden-wrap">
+    <div class="forbidden-card">
+      <h1>Access Denied</h1>
+      <p>You don't have permission to view this page.</p>
+      <a class="btn btn-primary" href="/">Go back home</a>
+    </div>
+  </div>
+</body>
+</html>
