@@ -65,7 +65,7 @@
       <div class="hero-search">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--muted);"></i>
         <input type="text" placeholder="Search doctors, specialties, hospitals..." id="hero-search-input" />
-        <a href="/booking" class="btn btn-primary">
+        <a href="/booking" class="btn btn-primary" id="hero-search-btn">
           <i class="fa-solid fa-search"></i> Find Care
         </a>
       </div>
@@ -443,11 +443,11 @@
           <div class="app-feat"><i class="fa-solid fa-star"></i><div><strong>Doctor Reviews</strong><span>Read verified patient reviews</span></div></div>
         </div>
         <div class="app-btns">
-          <a href="#" class="app-btn">
+          <a href="/booking" class="app-btn">
             <i class="fa-brands fa-apple"></i>
             <div class="abt"><small>Download on the</small><strong>App Store</strong></div>
           </a>
-          <a href="#" class="app-btn">
+          <a href="/booking" class="app-btn">
             <i class="fa-brands fa-google-play"></i>
             <div class="abt"><small>Get it on</small><strong>Google Play</strong></div>
           </a>
@@ -512,10 +512,10 @@
       <div class="footer-col">
         <h4>Company</h4>
         <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
+          <li><a href="/">About Us</a></li>
+          <li><a href="/booking">Contact</a></li>
+          <li><a href="/login">Privacy Policy</a></li>
+          <li><a href="/login">Terms of Service</a></li>
         </ul>
       </div>
     </div>
@@ -608,6 +608,17 @@
       const grid = document.getElementById('doctor-listing');
       if (grid) grid.innerHTML = '<p style="color:var(--muted);text-align:center;padding:24px;grid-column:1/-1;">Unable to load doctors. Please try again.</p>';
     });
+
+  function heroSearch() {
+    const q = document.getElementById('hero-search-input').value.trim();
+    if (!q) return;
+    window.location.href = '/booking';
+  }
+  document.getElementById('hero-search-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') heroSearch();
+  });
+  const heroBtn = document.getElementById('hero-search-btn');
+  if (heroBtn) heroBtn.addEventListener('click', heroSearch);
 </script>
 </body>
 </html>

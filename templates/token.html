@@ -124,12 +124,14 @@
               <th>Time</th>
               <th>Est. Wait</th>
               <th>Status</th>
+              {% if user and user.role in ('doctor', 'admin') %}
               <th>Actions</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody id="queue-tbody">
             <tr>
-              <td colspan="7" style="text-align:center; padding:32px; color:rgba(255,255,255,0.3);">
+              <td colspan="{% if user and user.role in ('doctor', 'admin') %}7{% else %}6{% endif %}" style="text-align:center; padding:32px; color:rgba(255,255,255,0.3);">
                 <i class="fa-solid fa-spinner fa-spin"></i> Loading queue...
               </td>
             </tr>
@@ -141,6 +143,7 @@
   </div>
 </div>
 
+<span id="user-role" data-role="{{ user.role if user else 'guest' }}" style="display:none;"></span>
 <div id="toast-container"></div>
 <script src="/static/js/token.js"></script>
 </body>

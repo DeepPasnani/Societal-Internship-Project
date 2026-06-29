@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Page Not Found</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .error-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      background: var(--bg);
+    }
+    .error-card {
+      width: 100%;
+      max-width: 620px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(26,108,245,0.08);
+    }
+    .error-card h1 {
+      margin: 0 0 12px;
+      font-family: var(--font-heading);
+      color: var(--text);
+    }
+    .error-card p {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      HealthBook
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      {% if user and user.role in ('doctor', 'admin') %}
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      {% endif %}
+      {% if user and user.role == 'admin' %}
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      {% endif %}
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="error-wrap">
+  <div class="error-card">
+    <h1>404 — Page Not Found</h1>
+    <p>The page you're looking for doesn't exist or has been moved.</p>
+    <div class="error-actions">
+      <a class="btn btn-outline" href="/">← Go Home</a>
+      <a class="btn btn-primary" href="/booking">Book Appointment</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

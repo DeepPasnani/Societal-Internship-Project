@@ -301,6 +301,11 @@ def forbidden(e):
     return render_template('403.html', user=session.get('user')), 403
 
 
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html', user=session.get('user')), 404
+
+
 # ─────────────────────────────────────────────────────────
 # PAGE ROUTES (public)
 # ─────────────────────────────────────────────────────────
@@ -330,6 +335,16 @@ def doctor():
 @role_required('admin')
 def analytics():
     return render_template('analytics.html', user=session.get('user'))
+
+
+@app.route('/doctors')
+def doctors_page():
+    return render_template('doctors.html', user=session.get('user'))
+
+
+@app.route('/packages')
+def packages_page():
+    return render_template('packages.html', user=session.get('user'))
 
 
 # ─────────────────────────────────────────────────────────
@@ -546,7 +561,11 @@ def api_queue():
             if is_auth:
                 d['patient_name'] = d['patient_name'].split()[0]
             else:
-                d.pop('patient_name', None)
+                d = {
+                    'token_number': d['token_number'],
+                    'status': d['status'],
+                    'doctor_name': d['doctor_name'],
+                }
             queue.append(d)
 
         return jsonify({'queue': queue, 'date': today})
@@ -655,7 +674,6 @@ def api_doctor_schedule():
 # ─────────────────────────────────────────────────────────
 
 @app.route('/api/today-stats')
-@role_required_api('admin', 'doctor')
 def api_today_stats():
     today = datetime.now().strftime('%Y-%m-%d')
     conn  = get_db()

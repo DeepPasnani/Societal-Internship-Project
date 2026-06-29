@@ -6,8 +6,11 @@ let activeDoctor = null;
 let allQueue     = [];
 let doctors      = [];
 let refreshTimer = null;
+let userRole     = 'guest';
 
 document.addEventListener('DOMContentLoaded', () => {
+  userRole = document.getElementById('user-role')?.dataset.role || 'guest';
+
   document.getElementById('hamburger').addEventListener('click', () => {
     document.getElementById('navLinks').classList.toggle('open');
   });
@@ -27,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   refreshTimer = setInterval(refreshQueue, 8000);
 });
+
+function canManageQueue() {
+  return userRole === 'doctor' || userRole === 'admin';
+}
 
 function renderDoctorTabs(docs) {
   const tabsEl = document.getElementById('queue-tabs');
@@ -85,7 +92,7 @@ function updateNowServing() {
   if (inProgress.length > 0) {
     const cur = inProgress[0];
     nsTokenEl.textContent  = `#${cur.token_number}`;
-    nsDoctorEl.textContent = `${cur.patient_name} · ${cur.doctor_name}`;
+    nsDoctorEl.textContent = cur.patient_name ? `${cur.patient_name} · ${cur.doctor_name}` : cur.doctor_name;
   } else if (waiting.length > 0) {
     nsTokenEl.textContent  = `#${waiting[0].token_number}`;
     nsDoctorEl.textContent = `Next up — ${waiting[0].doctor_name}`;
@@ -105,9 +112,10 @@ function renderQueue(queue) {
   const filtered = getFilteredQueue();
 
   if (filtered.length === 0) {
+    const emptyColspan = canManageQueue() ? 7 : 6;
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align:center;padding:48px;color:rgba(255,255,255,0.3);">
+        <td colspan="${emptyColspan}" style="text-align:center;padding:48px;color:rgba(255,255,255,0.3);">
           <i class="fa-solid fa-calendar-xmark" style="font-size:2rem;display:block;margin-bottom:12px;opacity:0.4;"></i>
           No appointments for today${activeDoctor ? ' for this doctor' : ''}.
         </td>
@@ -119,16 +127,20 @@ function renderQueue(queue) {
     const badgeClass = statusBadgeClass(a.status);   // FIX: no double 'badge'
     const rowClass   = a.status === 'In Progress' ? 'inprogress-row' : '';
     const waitText   = a.predicted_wait_minutes ? `~${a.predicted_wait_minutes} min` : '—';
+    const timeText   = a.appointment_time || '—';
+    const specText   = a.specialization || '';
+    const patientText = a.patient_name || '';
+    const rowId = a.id || `${a.token_number}-${a.doctor_name}`;
 
     return `
-      <tr class="${rowClass}" id="row-${a.id}">
+      <tr class="${rowClass}" id="row-${rowId}">
         <td><span class="token-num">#${a.token_number}</span></td>
-        <td>${escapeHtml(a.patient_name)}</td>
+        <td>${escapeHtml(patientText)}</td>
         <td>
-          <small style="display:block;color:rgba(255,255,255,0.4);font-size:0.72rem;">${escapeHtml(a.specialization)}</small>
+          <small style="display:block;color:rgba(255,255,255,0.4);font-size:0.72rem;">${escapeHtml(specText)}</small>
           ${escapeHtml(a.doctor_name)}
         </td>
-        <td style="font-family:'Space Grotesk',monospace;color:rgba(255,255,255,0.7);">${a.appointment_time}</td>
+        <td style="font-family:'Space Grotesk',monospace;color:rgba(255,255,255,0.7);">${timeText}</td>
         <td style="font-family:'Space Grotesk',monospace;color:rgba(255,255,255,0.6);">${waitText}</td>
         <td><span class="${badgeClass}">${a.status}</span></td>
         <td>${buildActions(a)}</td>
@@ -137,9 +149,13 @@ function renderQueue(queue) {
 }
 
 function buildActions(appt) {
+  const canAct = canManageQueue();
   if (appt.status === 'Done' || appt.status === 'No Show') {
-    return `<span style="color:rgba(255,255,255,0.25);font-size:0.8rem;">Closed</span>`;
+    return canAct
+      ? `<span style="color:rgba(255,255,255,0.25);font-size:0.8rem;">Closed</span>`
+      : '';
   }
+  if (!canAct) return '';
   const btns = [];
   if (appt.status === 'Waiting') {
     btns.push(`<button class="btn btn-warning btn-sm" onclick="callNext(${appt.id})">
