@@ -110,6 +110,3 @@ Training data is calibrated to real-world no-show statistics from the Kaggle Med
 **GTU Societal Internship · BE05000011 · SVIT Vasad**
 
 </div>
----
-
-## 🗂️ Project Structure
