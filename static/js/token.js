@@ -126,7 +126,7 @@ function renderQueue(queue) {
   tbody.innerHTML = filtered.map(a => {
     const badgeClass = statusBadgeClass(a.status);   // FIX: no double 'badge'
     const rowClass   = a.status === 'In Progress' ? 'inprogress-row' : '';
-    const waitText   = a.predicted_wait_minutes ? `~${a.predicted_wait_minutes} min` : '—';
+    const waitText   = a.predicted_wait_minutes != null ? `~${a.predicted_wait_minutes} min` : '—';
     const timeText   = a.appointment_time || '—';
     const specText   = a.specialization || '';
     const patientText = a.patient_name || '';
@@ -135,7 +135,7 @@ function renderQueue(queue) {
     return `
       <tr class="${rowClass}" id="row-${rowId}">
         <td><span class="token-num">#${a.token_number}</span></td>
-        <td>${escapeHtml(patientText)}</td>
+        <td>${patientText ? escapeHtml(patientText) : '<span style="color:rgba(255,255,255,0.25);font-size:0.8rem;">—</span>'}</td>
         <td>
           <small style="display:block;color:rgba(255,255,255,0.4);font-size:0.72rem;">${escapeHtml(specText)}</small>
           ${escapeHtml(a.doctor_name)}
@@ -143,7 +143,7 @@ function renderQueue(queue) {
         <td style="font-family:'Space Grotesk',monospace;color:rgba(255,255,255,0.7);">${timeText}</td>
         <td style="font-family:'Space Grotesk',monospace;color:rgba(255,255,255,0.6);">${waitText}</td>
         <td><span class="${badgeClass}">${a.status}</span></td>
-        <td>${buildActions(a)}</td>
+        ${canManageQueue() ? `<td>${buildActions(a)}</td>` : ''}
       </tr>`;
   }).join('');
 }

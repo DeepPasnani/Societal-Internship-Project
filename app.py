@@ -423,6 +423,8 @@ def api_book():
             )
             patient_id = cursor.lastrowid
 
+        conn.commit()
+
         existing_appt = conn.execute(
             "SELECT id FROM appointments WHERE patient_id=? AND appointment_date=? "
             "AND doctor_id=? AND status != 'No Show'",
@@ -562,9 +564,15 @@ def api_queue():
                 d['patient_name'] = d['patient_name'].split()[0]
             else:
                 d = {
+                    'id': d['id'],
                     'token_number': d['token_number'],
+                    'appointment_time': d['appointment_time'],
                     'status': d['status'],
+                    'predicted_wait_minutes': d['predicted_wait_minutes'],
+                    'doctor_id': d['doctor_id'],
                     'doctor_name': d['doctor_name'],
+                    'specialization': d['specialization'],
+                    'patient_name': '',
                 }
             queue.append(d)
 

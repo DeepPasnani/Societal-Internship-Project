@@ -36,7 +36,7 @@ EXPOSE 8196
 
 # Environment defaults (override in docker-compose or at runtime)
 ENV FLASK_DEBUG=false \
-    SECRET_KEY=change-me-in-production \
+    SECRET_KEY="" \
     GOOGLE_CLIENT_ID="" \
     GOOGLE_CLIENT_SECRET="" \
     FIREBASE_API_KEY="" \
