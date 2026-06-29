@@ -3,7 +3,7 @@ import sys
 import json
 import logging
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from functools import wraps
 
 from flask import (
@@ -11,10 +11,12 @@ from flask import (
     session, redirect, url_for, abort
 )
 from authlib.integrations.flask_client import OAuth
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 sys.path.insert(0, os.path.dirname(__file__))
 from database import (
-    init_db, get_db, get_next_token, get_tokens_ahead,
+    init_db, get_db, get_next_token, get_next_token_atomic, get_tokens_ahead,
     get_doctor_no_show_rate
 )
 from model.predict import predict_wait
@@ -24,11 +26,27 @@ from model.predict import predict_wait
 # ─────────────────────────────────────────────────────────
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'healthbook-dev-secret-change-in-prod')
-app.config['JSON_SORT_KEYS'] = False
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_secret = os.environ.get('SECRET_KEY', '')
+if not _secret:
+    if os.environ.get('FLASK_ENV') == 'production':
+        raise RuntimeError("SECRET_KEY environment variable must be set in production")
+    _secret = 'dev-only-insecure-key'
+    logger.warning("Using insecure dev SECRET_KEY — do not use in production")
+
+app.secret_key = _secret
+app.config.update(
+    SESSION_COOKIE_SECURE=os.environ.get('FLASK_ENV') == 'production',
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
+)
+app.config['JSON_SORT_KEYS'] = False
+
+limiter = Limiter(get_remote_address, app=app, default_limits=[])
 
 # ─────────────────────────────────────────────────────────
 # GOOGLE OAUTH (Authlib)
@@ -107,7 +125,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user' not in session:
-            return redirect(url_for('login_page'))
+            return redirect(url_for('login_page', next=request.path))
         return f(*args, **kwargs)
     return decorated
 
@@ -159,6 +177,16 @@ def role_required_api(*roles):
     return decorator
 
 
+def get_role_redirect_url(role: str, next_url: str = '') -> str:
+    if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+        return next_url
+    if role == 'admin':
+        return url_for('analytics')
+    elif role == 'doctor':
+        return url_for('doctor')
+    return url_for('index')
+
+
 # ─────────────────────────────────────────────────────────
 # AUTH ROUTES
 # ─────────────────────────────────────────────────────────
@@ -166,7 +194,8 @@ def role_required_api(*roles):
 @app.route('/login')
 def login_page():
     if 'user' in session:
-        return redirect(url_for('index'))
+        role = session['user'].get('role', 'patient')
+        return redirect(get_role_redirect_url(role))
     return render_template('login.html',
         google_client_id=os.environ.get('GOOGLE_CLIENT_ID', ''),
         firebase_api_key=FIREBASE_API_KEY,
@@ -177,6 +206,8 @@ def login_page():
 @app.route('/auth/google')
 def auth_google():
     redirect_uri = url_for('auth_google_callback', _external=True, next=request.args.get('next') or '')
+    if request.args.get('next'):
+        session['oauth_next'] = request.args.get('next')
     return google.authorize_redirect(redirect_uri)
 
 
@@ -195,15 +226,16 @@ def auth_google_callback():
             'email': user['email'], 'role': user['role'],
             'auth_provider': 'google',
         }
-        role = session['user'].get('role')
-        next_url = request.args.get('next') or role_redirect_url(role)
-        return redirect(next_url)
+        session.permanent = True
+        next_url = session.pop('oauth_next', '') or request.args.get('next', '')
+        return redirect(get_role_redirect_url(session['user']['role'], next_url))
     except Exception as e:
         logger.error(f"Google auth error: {e}")
         return redirect(url_for('login_page') + '?error=google_auth_failed')
 
 
 @app.route('/auth/phone/verify', methods=['POST'])
+@limiter.limit("5 per minute;20 per hour")
 def auth_phone_verify():
     """
     Verify Firebase phone auth ID token sent from the frontend after OTP success.
@@ -245,9 +277,10 @@ def auth_phone_verify():
         'email': user['email'], 'role': user['role'],
         'auth_provider': 'phone', 'phone': phone,
     }
-    role = session['user'].get('role')
-    next_url = data.get('next') or role_redirect_url(role)
-    return jsonify({'success': True, 'redirect_url': next_url, 'user': session['user']})
+    session.permanent = True
+    next_url = data.get('next', '')
+    redirect_url = get_role_redirect_url(user['role'], next_url)
+    return jsonify({'success': True, 'user': session['user'], 'redirect_url': redirect_url})
 
 
 @app.route('/auth/logout')
@@ -321,8 +354,8 @@ def api_doctors():
 @login_required_api
 def api_book():
     data             = request.get_json() or {}
-    name             = data.get('name', '').strip()
-    phone            = data.get('phone', '').strip()
+    name             = data.get('name', '').strip()[:100]
+    phone            = data.get('phone', '').strip()[:15]
     age              = data.get('age')
     doctor_id        = int(data.get('doctor_id', 1))
     appointment_date = data.get('appointment_date', '')
@@ -333,6 +366,30 @@ def api_book():
 
     if not phone.isdigit() or len(phone) != 10:
         return jsonify({'error': 'Phone must be a 10-digit number'}), 400
+
+    # Past-date check
+    try:
+        appt_date_check = datetime.strptime(appointment_date, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
+    if appt_date_check < date.today():
+        return jsonify({'error': 'Cannot book appointments in the past'}), 400
+    if appt_date_check > date.today() + timedelta(days=30):
+        return jsonify({'error': 'Cannot book more than 30 days in advance'}), 400
+
+    # Doctor availability day check
+    conn_check = get_db()
+    try:
+        doc_check = conn_check.execute(
+            "SELECT available_days FROM doctors WHERE id=?", (doctor_id,)
+        ).fetchone()
+        if not doc_check:
+            return jsonify({'error': 'Doctor not found'}), 404
+        day_name = appt_date_check.strftime('%a')  # 'Mon', 'Tue', etc.
+        if day_name not in doc_check['available_days'].split(','):
+            return jsonify({'error': f'Doctor not available on {appt_date_check.strftime("%A")}' }), 400
+    finally:
+        conn_check.close()
 
     conn = get_db()
     try:
@@ -351,12 +408,19 @@ def api_book():
             )
             patient_id = cursor.lastrowid
 
-        token_number = get_next_token(doctor_id, appointment_date)
+        existing_appt = conn.execute(
+            "SELECT id FROM appointments WHERE patient_id=? AND appointment_date=? "
+            "AND doctor_id=? AND status != 'No Show'",
+            (patient_id, appointment_date, doctor_id)
+        ).fetchone()
+        if existing_appt:
+            return jsonify({'error': 'You already have an appointment with this doctor on this date'}), 409
+
+        token_number = get_next_token_atomic(conn, doctor_id, appointment_date)
         tokens_ahead = get_tokens_ahead(doctor_id, appointment_date, token_number)
 
         appt_dt = datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
-        from datetime import date as _date
-        today       = _date.today()
+        today       = date.today()
         appt_date   = appt_dt.date()
         day_gap     = max(0, (appt_date - today).days)
 
@@ -475,10 +539,14 @@ def api_queue():
                 ORDER BY a.doctor_id, a.token_number
             """, (today,)).fetchall()
 
+        is_auth = 'user' in session
         queue = []
         for r in rows:
             d = dict(r)
-            d['patient_name'] = d['patient_name'].split()[0]  # first name only
+            if is_auth:
+                d['patient_name'] = d['patient_name'].split()[0]
+            else:
+                d.pop('patient_name', None)
             queue.append(d)
 
         return jsonify({'queue': queue, 'date': today})
@@ -532,6 +600,7 @@ def api_update_token():
 # ─────────────────────────────────────────────────────────
 
 @app.route('/api/doctor-schedule')
+@role_required_api('doctor', 'admin')
 def api_doctor_schedule():
     doctor_id = request.args.get('doctor_id', type=int)
     date_str  = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
@@ -544,7 +613,7 @@ def api_doctor_schedule():
         rows = conn.execute("""
             SELECT a.id, a.token_number, a.appointment_time, a.status,
                    a.predicted_wait_minutes, a.actual_wait_minutes,
-                   p.name as patient_name, p.age, p.phone
+                   p.name as patient_name, p.age
             FROM appointments a
             JOIN patients p ON a.patient_id = p.id
             WHERE a.doctor_id=? AND a.appointment_date=?
@@ -750,6 +819,30 @@ def api_analytics():
             'hourly_volume':       hourly_volume,
             'predicted_vs_actual': predicted_vs_actual,
         })
+    finally:
+        conn.close()
+
+
+@app.route('/api/admin/set-role', methods=['POST'])
+@role_required_api('admin')
+def api_admin_set_role():
+    data = request.get_json() or {}
+    email = data.get('email', '').strip()
+    new_role = data.get('role', '')
+    if new_role not in ('patient', 'doctor', 'admin'):
+        return jsonify({'error': 'Invalid role. Must be patient, doctor, or admin'}), 400
+    if not email:
+        return jsonify({'error': 'email is required'}), 400
+    conn = get_db()
+    try:
+        result = conn.execute("UPDATE users SET role=? WHERE email=?", (new_role, email))
+        conn.commit()
+        if result.rowcount == 0:
+            return jsonify({'error': f'No user found with email {email}'}), 404
+        return jsonify({'success': True, 'email': email, 'role': new_role})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
     finally:
         conn.close()
 

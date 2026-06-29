@@ -3,6 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Access Denied — HealthBook</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      HealthBook
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="/booking"><i class="fa-solid fa-calendar-plus"></i> Book</a></li>
+      <li><a href="/token"><i class="fa-solid fa-ticket"></i> Queue</a></li>
+      {% if user and user.role in ('doctor', 'admin') %}
+      <li><a href="/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a></li>
+      {% endif %}
+      {% if user and user.role == 'admin' %}
+      <li><a href="/analytics"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+      {% endif %}
+      <li>
+        {% if user %}
+          <span style="display:flex;align-items:center;gap:8px;font-size:0.85rem;">
+            <i class="fa-solid fa-circle-user" style="color:var(--primary);"></i>
+            <span style="color:var(--text);font-weight:600;">{{ user.name.split()[0] }}</span>
+            <a href="/auth/logout" style="color:var(--muted);font-size:0.82rem;">(Sign Out)</a>
+          </span>
+        {% else %}
+          <a href="/login" class="btn btn-primary" style="padding:6px 16px;font-size:0.85rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<main style="min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+  <div class="container" style="max-width:640px;">
+    <div class="card" style="text-align:center;padding:48px 32px;">
+      <h1 style="margin-bottom:12px;">Access Denied</h1>
+      <p style="color:var(--muted);margin-bottom:24px;">You don't have permission to view this page.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a class="btn btn-primary" href="/">← Go Home</a>
+        <a class="btn btn-ghost" href="/login">Sign In</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Access Denied</title>
   <link rel="stylesheet" href="/static/css/style.css" />
   <style>

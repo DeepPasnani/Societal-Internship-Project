@@ -45,13 +45,14 @@ ENV FLASK_DEBUG=false \
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/today-stats')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8196/api/today-stats')" || exit 1
 
 # Entrypoint: init DB then launch gunicorn
 CMD ["sh", "-c", "python -c 'from database import init_db; init_db()' && \
      gunicorn --bind 0.0.0.0:8196 \
-              --workers 2 \
-              --threads 4 \
+            --workers 1 \
+            --threads 8 \
+            --worker-class gthread \
               --timeout 120 \
               --access-logfile - \
               --error-logfile - \

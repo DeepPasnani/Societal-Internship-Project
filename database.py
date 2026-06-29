@@ -1,9 +1,11 @@
 import sqlite3
 import os
 import random
+import logging
 from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'healthbook.db')
+logger = logging.getLogger(__name__)
 
 
 def get_db():
@@ -35,7 +37,8 @@ def init_db():
             specialization TEXT NOT NULL,
             available_days TEXT,
             start_time     TEXT,
-            end_time       TEXT
+            end_time       TEXT,
+            user_id        INTEGER UNIQUE
         );
 
         CREATE TABLE IF NOT EXISTS appointments (
@@ -73,8 +76,25 @@ def init_db():
             ON appointments(appointment_date);
         CREATE INDEX IF NOT EXISTS idx_appt_status
             ON appointments(status);
+        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub);
     """)
     conn.commit()
+
+    try:
+        conn.execute("ALTER TABLE doctors ADD COLUMN user_id INTEGER UNIQUE")
+        conn.commit()
+    except Exception:
+        try:
+            conn.execute("ALTER TABLE doctors ADD COLUMN user_id INTEGER")
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_doctors_user_id ON doctors(user_id)")
+            conn.commit()
+        except Exception:
+            pass
 
     # Seed doctors
     if c.execute("SELECT COUNT(*) FROM doctors").fetchone()[0] == 0:
@@ -90,14 +110,17 @@ def init_db():
         )
         conn.commit()
 
+    admin_email = os.environ.get('ADMIN_EMAIL', '')
+    if admin_email:
+        conn.execute(
+            "UPDATE users SET role='admin' WHERE email=?", (admin_email,)
+        )
+        conn.commit()
+        logger.info(f"Admin role granted to {admin_email}")
+
     # Seed appointments
     if c.execute("SELECT COUNT(*) FROM appointments").fetchone()[0] == 0:
         _seed_appointments(c)
-        conn.commit()
-
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '')
-    if ADMIN_EMAIL:
-        c.execute("UPDATE users SET role='admin' WHERE email=?", (ADMIN_EMAIL,))
         conn.commit()
 
     conn.close()
@@ -195,24 +218,13 @@ def _seed_appointments(c):
 
 
 def get_next_token_atomic(conn, doctor_id: int, date: str) -> int:
-    """
-    Atomically allocate the next token using a SQLite transaction.
-    Retries up to 5 times to avoid race conditions under concurrent writes.
-    """
-    for _ in range(5):
-        try:
-            with conn:
-                conn.execute("BEGIN IMMEDIATE")
-                result = conn.execute(
-                    "SELECT COALESCE(MAX(token_number), 0) FROM appointments "
-                    "WHERE doctor_id=? AND appointment_date=?",
-                    (doctor_id, date)
-                ).fetchone()[0]
-                return result + 1
-        except sqlite3.OperationalError:
-            import time
-            time.sleep(0.05)
-    raise RuntimeError("Could not allocate token after 5 retries")
+    conn.execute("BEGIN IMMEDIATE")
+    result = conn.execute(
+        "SELECT COALESCE(MAX(token_number), 0) FROM appointments "
+        "WHERE doctor_id=? AND appointment_date=?",
+        (doctor_id, date)
+    ).fetchone()[0]
+    return result + 1
 
 
 def get_next_token(doctor_id: int, date: str) -> int:
